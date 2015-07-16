@@ -9,7 +9,7 @@
       "url": "http://github.com/Glympse/"
     }
   ],
-  "main": "app/",
+  "main": "app/src/",
   "moduleType": [
     "amd"
   ],
@@ -20,14 +20,19 @@
   "private": false,
   "ignore": [
     "**/.*",
+    "*.html",
     "node_modules",
-    "src/lib",
+    "app/css",
+    "app/lib",
+	"app/src/requireConfig*",
+	"app/src/test",
+	"builds",
     "test",
     "tests",
-    "src/require*",
-    "*.html",
-    "content",
-    "styles"
+    "frag.*",
+    "grunt",
+    "Gruntfile.js",
+	"package.json"
   ],
   "dependencies": {
     "requirejs": "~2.1.11",
