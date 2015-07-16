@@ -1,0 +1,4 @@
+#Glympse Journey (Core) - Changelog
+===================================
+
+1.0.0 [2015/07/15]: Initial release

@@ -1,0 +1,36 @@
+{
+    "env": {
+        "browser": true,
+        "amd": true
+    },
+    "globals": {
+        "DocumentFragment": true,
+        "console": true,
+        "$": true,
+	"glympse": true
+    },
+    "rules": {
+        "brace-style": [0, "stroustrup"],
+		"camelcase": 1,
+        "consistent-this": 2,
+        "curly": [1, "all"],
+        "eqeqeq": 0,
+        "no-console": 0,
+        "no-constant-condition": 1,
+		"no-mixed-spaces-and-tabs": [2, "smart-tabs"],
+        "no-ternary": 0,
+        "no-trailing-spaces": 0,
+        "no-use-before-define": [1, "nofunc"],
+        "no-underscore-dangle": 0,
+        "no-unused-vars": [0, {"vars": "local", "args": "none"}],
+        "func-names": 0,
+        "func-style": [2, "declaration"],
+        "new-cap": 1,
+        "new-parens": 2,
+        "one-var": 0,
+        "quotes": [0, "single"],
+        "space-infix-ops": 0,
+        "strict": 0,
+        "valid-jsdoc": 0
+    }
+}

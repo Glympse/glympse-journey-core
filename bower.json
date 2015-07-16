@@ -1,0 +1,40 @@
+{
+  "name": "glympse-journey-core",
+  "description": "Glympse Journey (Core)",
+  "version": "1.0.0",
+  "homepage": "https://github.com/Glympse/glympse-journey-core",
+  "authors": [
+    {
+      "name": "Glympse Inc.",
+      "url": "http://github.com/Glympse/"
+    }
+  ],
+  "main": "app/",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "Glympse",
+    "Journey"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src/lib",
+    "test",
+    "tests",
+    "src/require*",
+    "*.html",
+    "content",
+    "styles"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.11",
+    "almond": "~0.3.0",
+    "MessageChannel.js": "~0.1.5",
+    "UUID.js": "https://github.com/LiosK/UUID.js.git#2fe182e3166f9a279738568a75177011f26aa008",
+    "kamino.js": "~0.0.2",
+    "glympse-viewer-client-adapter": "~0.3.6"
+  }
+}
