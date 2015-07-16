@@ -110,7 +110,7 @@ iframe interfaces, etc.)
 values]
 
 
-#GJC Feedback component
+##GJC Feedback component
 [TODO: Describe calls/configuration necessary to interact with the Feedback component]
 
 

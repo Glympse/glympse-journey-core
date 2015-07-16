@@ -17,7 +17,7 @@
     "Glympse",
     "Journey"
   ],
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
