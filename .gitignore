@@ -14,5 +14,6 @@ node_modules
 dist
 .tmp
 app/lib
+app/src/ph
 .yo-rc.json
 .sass-cache

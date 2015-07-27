@@ -20,10 +20,11 @@ define(function(require, exports, module)
 
 	var idOasisPort = 'glympse';
 	var cTimePromise = 'promise';
+	var cTimeFuture = 'future';
 	
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.0.1)');
+	console.log(_id + ' v(1.1.0)');
 	
 	
 	/*
@@ -44,16 +45,11 @@ define(function(require, exports, module)
 		
 		// state
 		var that = this;
-		var isAbandoned = false;
 		var currPhase = null;
+		var isAbandoned = false;
+		var pushedBase = false;
 		var timeStart = 0;
 		var viewManager = vm;
-		var demo = cfg.demo;
-		
-		var demoSentPromiseTime = false;
-		var pushedBase = false;
-		var gotLivePhase = false;
-		
 		
 		
 		///////////////////////////////////////////////////////////////////////////////
@@ -113,32 +109,28 @@ define(function(require, exports, module)
 				{
 					if (!currPhase)
 					{
-						if (demo)
-						{
-							timeStart = timeStart || (new Date()).getTime();
-							viewManager.cmd(dataUpdate, { id: s.LastUpdate, val: timeStart });
-							viewManager.cmd(c.ShowInvites, false);
-						}
+						timeStart = timeStart || (new Date()).getTime();
 						
-						// If no phase, just force the Live phase, as it is
-						// a regular Glympse. For demo mode, we always start
-						// on the Pre phase.
-						currPhase = { phase: (demo) ? p.Pre : p.Live, t: timeStart };
+						// If no phase, use a default, or force the Live phase, as
+						// it is a regular Glympse. Generally, demo mode will set
+						// the desired defaultPhase, utilizing something like demobot0
+						// as the invite.
+						currPhase = { phase: (cfg.defaultPhase || p.Live), t: timeStart };
 						viewManager.cmd(dataUpdate, { id: stateAdapter.Phase, val: currPhase });
 					}
 					
 					setTimeout(function()
 					{
-						viewManager.cmd(c.InitUi, null);
+						viewManager.cmd(c.InitUi, timeStart);
 					}, 400);
 					
 					viewManager.cmd(c.Progress, 3 / 3);
 					break;
 				}
 					
-				case m.DemoUpdate:
+				case m.ForcePhase:
 				{
-					handleDemoUpdate(args);
+					handleForcePhase(args);
 					break;
 				}
 					
@@ -163,10 +155,11 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
-		function handleDemoUpdate(newPhase)
+		function handleForcePhase(newPhase)
 		{
 			currPhase = newPhase;
-			viewManager.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase, val: currPhase });
+			viewManager.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase
+												   , val: currPhase });
 		}
 		
 		function handleAbortUpdate()
@@ -184,6 +177,11 @@ define(function(require, exports, module)
 					   );
 		}
 		
+		
+		///////////////////////////////////////////////////////////////////////////////
+		// UTILITY
+		///////////////////////////////////////////////////////////////////////////////
+		
 		function parseData(data)
 		{
 			var arrivalFrom = -1;
@@ -196,23 +194,25 @@ define(function(require, exports, module)
 			{
 				var item = data[i];
 				var id = item.n;
+				var val = item.v;
+				var t = item.t;
 				
-				if (item.t > lastUpdated && (id === 'start_time' || id === 'destination'))
+				if (t > lastUpdated && (id === 'start_time' || id === 'destination'))
 				{
-					lastUpdated = item.t;
+					lastUpdated = t;
 				}
 				
-				switch (item.n)
+				switch (id)
 				{
 					case 'start_time':
 					{
-						timeStart = Number(item.v);
+						timeStart = Number(val);
 						break;
 					}
 						
 					case 'destination':
 					{
-						viewManager.cmd(update, { id: s.Destination, val: item.v });
+						viewManager.cmd(update, { id: s.Destination, val: val });
 						break;
 					}
 					
@@ -220,18 +220,16 @@ define(function(require, exports, module)
 					{
 						// We're only interested in eta for its promise time in the DataUpdate,
 						// as the adapter will pass along continuous current Eta info.
-						if (demo && !demoSentPromiseTime)
+						if (val)
 						{
-							if (item.v)
+							if (val.type === cTimePromise)
 							{
-								item.v.type = cTimePromise;
-								demoSentPromiseTime = true;
+								viewManager.cmd(update, { id: s.PromiseTime, val: val });
 							}
-						}
-						
-						if (item.v && item.v.type === cTimePromise)
-						{
-							viewManager.cmd(update, { id: s.PromiseTime, val: item.v });
+							else if (val.type === cTimeFuture)
+							{
+								viewManager.cmd(update, { id: s.FutureTime, val: val });
+							}
 						}
 						
 						break;
@@ -239,10 +237,10 @@ define(function(require, exports, module)
 						
 					case 'base_location':
 					{
-						if (!demo || !pushedBase)
+						if (!pushedBase)
 						{
 							pushedBase = true;
-							viewManager.cmd(update, { id: s.StoreLocation, val: item.v });
+							viewManager.cmd(update, { id: s.StoreLocation, val: val });
 						}
 						
 						break;
@@ -250,15 +248,14 @@ define(function(require, exports, module)
 					
 					case 'order_id':
 					{
-						cfg.idOrder = item.v;
-						viewManager.cmd(update, { id: s.OrderInfo, val: item.v });
+						cfg.idOrder = val;
+						viewManager.cmd(update, { id: s.OrderInfo, val: val });
 						break;
 					}
 					
 					case 'phase':
 					{
-						currPhase = { phase: item.v, t: item.t };
-						
+						currPhase = { phase: val, t: t };
 						viewManager.cmd(update, { id: stateAdapter.Phase, val: currPhase });
 						
 						if (currPhase.phase === p.Aborted)
@@ -266,30 +263,24 @@ define(function(require, exports, module)
 							isAbandoned = true;
 						}
 						
-						if (!gotLivePhase && (item.v === p.Live || (!cfg.mapEtaNotLive && item.v === p.Eta)))
-						{
-							gotLivePhase = true;
-							lastUpdated = item.t;
-						}
-						
 						break;
 					}
 						
 					case 'appt_from':
 					{
-						arrivalFrom = item.v;
+						arrivalFrom = val;
 						break;
 					}
 					
 					case 'appt_to':
 					{
-						arrivalTo = item.v;
+						arrivalTo = val;
 						break;
 					}
 					
 					case 'appt_tz':
 					{
-						var vals = item.v.split(':');
+						var vals = val.split(':');
 						arrivalOffset = Number(vals[0]) * 60 + Number(vals[1]);
 						break;
 					}

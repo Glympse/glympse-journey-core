@@ -14,7 +14,7 @@ require.config({
         oasis: '../lib/glympse-viewer-client-adapter/app/src/common/oasis',
         rsvp: '../lib/glympse-viewer-client-adapter/app/src/common/rsvp',
         'glympse-viewer-client-adapter': '../lib/glympse-viewer-client-adapter/app/src',
-		'glympse-journey-core': '.'
+        'glympse-journey-core': '.'
     },
     packages: [
 

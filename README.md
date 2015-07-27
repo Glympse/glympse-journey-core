@@ -138,6 +138,10 @@ setup with a visualization of all of the messages passed from the GJC and its
 sub-components, and allows for communication from the ViewManager back to the
 GJC instance.
 
+Additionally, there is a [Yeoman](http://yeoman.io/) generator that creates a basic ready-to-go
+project GJC-based project. More details can be found at
+[https://github.com/Glympse/generator-glympse-journey-app](https://github.com/Glympse/generator-glympse-journey-app).
+
 
 ##Local GJC project setup/build verification 
 It is actually quite simple really!

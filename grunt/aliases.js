@@ -48,6 +48,10 @@ module.exports = function (grunt) {
     'lint'
   ]);
 
+  grunt.registerTask('bower', [
+    'bowerRequirejs'
+  ]);
+
   grunt.registerTask('default', [
     'build'
   ]);

@@ -19,7 +19,7 @@ define(function(require, exports, module)
 			  TokenUpdate: 'TokenUpdate'				// From feedback provider to UI component
 			, FeedbackSubmitted: 'FeedbackSubmitted'	// From feedback provider to UI component
 			, AdapterReady: 'AdapterReady'
-			, DemoUpdate: 'DemoUpdate'
+			, ForcePhase: 'ForcePhase'					// Used by ViewController/app for forced view updates (i.e. demos)
 			, ForceAbort: 'ForceAbort'
 		}
 		
@@ -32,6 +32,7 @@ define(function(require, exports, module)
 			, LastUpdated: 'LastUpdated'
 			, StoreLocation: 'StoreLocation'	// ?? App-specific?
 			, PromiseTime: 'PromiseTime'		// ?? App-specific?
+			, FutureTime: 'FutureTime'			// ?? App-specific?
 		}
 		
 		, PHASE:
