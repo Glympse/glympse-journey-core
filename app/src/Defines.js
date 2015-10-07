@@ -1,8 +1,8 @@
 define(function(require, exports, module)
 {
     'use strict';
-	
-	module.exports = 
+
+	module.exports =
 	{
 		  strings: { }		// ?? Necessary??
 		, CMD:
@@ -10,10 +10,9 @@ define(function(require, exports, module)
 			  InitUi: 'InitUi'
 			, SendFeedback: 'SendFeedback'		// From UI to provider
 			, ShowInvites: 'ShowInvites'
-			, Progress: 'Progress'
 			, UpdateAuth: 'UpdateAuth'
 		}
-		
+
 		, MSG:
 		{
 			  TokenUpdate: 'TokenUpdate'				// From feedback provider to UI component
@@ -22,19 +21,25 @@ define(function(require, exports, module)
 			, ForcePhase: 'ForcePhase'					// Used by ViewController/app for forced view updates (i.e. demos)
 			, ForceAbort: 'ForceAbort'
 		}
-		
+
 		, STATE:
 		{
-			  OrderInfo: 'OrderInfo'
-			, LastUpdate: 'LastUpdate'
-			, Destination: 'Destination'
+			// Data-stream properties
+			  ApptFrom: 'appt_from'
+			, ApptTo: 'appt_to'
+			, ApptTimezone: 'appt_tz'
+			, FutureTime: 'future'
+			, OrderInfo: 'order_id'
+			, PromiseTime: 'promise'
+			, StoreLocation: 'base_location'
+			, Visibility: 'visibility'
+
+			// Meta-state
 			, ArrivalRange: 'ArrivalRange'		// ?? App-specific?
+			, LastUpdate: 'LastUpdate'
 			, LastUpdated: 'LastUpdated'
-			, StoreLocation: 'StoreLocation'	// ?? App-specific?
-			, PromiseTime: 'PromiseTime'		// ?? App-specific?
-			, FutureTime: 'FutureTime'			// ?? App-specific?
 		}
-		
+
 		, PHASE:
 		{
 			  Initial: 'initial'
@@ -47,7 +52,7 @@ define(function(require, exports, module)
 			, NotSet: 'notset'
 			, Aborted: 'not_completed'
 		}
-		
+
 		, ResponseCode: {
 			  success: 0
 			, errorLoading: 1

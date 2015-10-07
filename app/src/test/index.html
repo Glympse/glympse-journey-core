@@ -14,7 +14,7 @@
 	<script type=text/javascript src="//glympse.com/Scripts/here/6/mapsjs-service.js"></script>
 	<script type=text/javascript src="//glympse.com/Scripts/here/6/mapsjs-mapevents.js"></script>
 	<script type=text/javascript src="//glympse.com/js/loader/latest/jquery.glympser.min.js"></script>
-	
+
 	<!-- process:remove:dev -->
 	<script type="text/javascript" src="app.js"></script>
 	<!-- /process -->
@@ -26,17 +26,19 @@
 			while ((e = r.exec(q))) urlParams[d(e[1])] = d(e[2]);
 		})();
 
-		var screenOnly = (urlParams.screenOnly != null);
+		var b = glympse.broadcastTypes;
 		var t = urlParams.t || 'demobot0';
-		
+		var screenOnly = (urlParams.screenOnly != null);
+
 		window.cfgApp =
 		{
 			app: {
-				
+
 				// Core/app settings
 				  dbg: (urlParams.debug > 0) ? 0 : 1
 				, screenOnly: screenOnly
 				, demo: (t.indexOf('demobot') >= 0)
+				, elementViewer: '#glympser'
 				, mapCompletedToFeedback: true
 				, mapEtaNotLive: true
 				, "provider": {
@@ -50,7 +52,7 @@
 					, "surveyIdInfo": [ 111 ]
 					, "surveyOptions": [ ]
 				}
-				
+
 				// App-specific
 				, ratings: {
 					accumulate: true
@@ -69,14 +71,12 @@
 				}
 			}
 			, viewer: {
-				  t: t
-				, basePath: '//glympse.com/'
-				, pg: (urlParams.pg) ? (urlParams.pg) : null
+				  basePath: '//glympse.com/'
 				, w: 800
 				, h: 600
 				, onlyCss: (urlParams.onlyCss != null)
 				, onlyCanvas: (urlParams.onlyCanvas != null)
-				, broadcastData: true
+				, broadcast: [ b.DATA, /*b.ETA,*/ b.INVITE_STATUS ].join(',')
 				, hideDialog: 255
 				, showTraffic: true
 				, balloonRadius: 2
@@ -87,8 +87,12 @@
 				, zoomMax: -1
 			}
 			, adapter: {
-				  hideEvents: false
+				  t: t
+				, pg: (urlParams.pg || null)
+				, dbg: (urlParams.debug > 0) ? 0 : 1
+				, hideEvents: false
 				, hideUpdates: false
+				//, svcGlympse: '//api.glympse.com/v2/'
 			}
 		};
 	</script>

@@ -1,18 +1,18 @@
 define(function(require, exports, module)
 {
     'use strict';
-	
-	var lib = require('glympse-journey-core/common/utils');
+
+	var lib = require('glympse-adapter/lib/utils');
 	var Defines = require('glympse-journey-core/Defines');
-	
+
 	var c = Defines.CMD;
 	var m = Defines.MSG;
 	var rc = Defines.ResponseCode;
 	var cResult = 'result';
-	
+
 	var AppResponse = require('glympse-journey-core/models/AppResponse');
-	
-	
+
+
 	// Exported class
 	function EnRoute(controller, cfg)
 	{
@@ -24,7 +24,7 @@ define(function(require, exports, module)
 
 		// state
 		var userToken;
-		
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -86,9 +86,9 @@ define(function(require, exports, module)
 			var i, len;
 			for (i = 0, len = idInfo.length; i < len; i++)
 			{
-				items.push({ _id: idInfo[i], value: vals.info[i] }); 
+				items.push({ _id: idInfo[i], value: vals.info[i] });
 			}
-			
+
 			if (vals.options)
 			{
 				var idOptions = cfg.surveyOptions;
@@ -97,7 +97,7 @@ define(function(require, exports, module)
 					items.push({ _id: idOptions[i], value: vals.options[i] });
 				}
 			}
-			
+
 			// Handle update change in user token, as necessary
 			if (!userToken)
 			{
@@ -107,7 +107,7 @@ define(function(require, exports, module)
 					userToken = null;
 				}
 			}
-			
+
 			var data = {
 				  'survey_id': cfg.surveyId
 				, 'uid': userToken
@@ -150,7 +150,7 @@ define(function(require, exports, module)
 			if (data)
 			{
 				var statusCode = data[cResult];
-				
+
 				response.code = rc.success;
 				response.info = statusCode;
 
