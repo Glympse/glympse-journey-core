@@ -1,70 +1,78 @@
 define(function(require, exports, module)
 {
     'use strict';
-	
+
+	// Glympse Adapter
+	var GlympseAdapterDefines = require('glympse-adapter/GlympseAdapterDefines');
+	var lib = require('glympse-adapter/lib/utils');
+
 	// JourneyCore
-	var lib = require('glympse-journey-core/common/utils');
 	var Defines = require('glympse-journey-core/Defines');
+
 	var c = Defines.CMD;
 	var s = Defines.STATE;
 	var p = Defines.PHASE;
 	var m = Defines.MSG;
 	var phase = Defines.PHASE;
-	
-	
+
+	var stateAdapter = GlympseAdapterDefines.STATE;
+	var msgAdapter = GlympseAdapterDefines.MSG;
+
+
 	// Exported class
 	function ViewManager(cfg)
 	{
 		// consts
 		var dbg = lib.dbg('ViewManager');
-		
-		var defAdapter = glympse.ViewClientAdapterDefines;
-		var stateAdapter = defAdapter.STATE;
-		var msgAdapter = defAdapter.MSG;
 
 		var controller;
-		
+
 		// ui - general
 		var app = $('#divApp');
 		var outputText = $('#outputText');
-		
+
 		// state
 		var adapter;
 		var currPhase;
-		
-		
+
+
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
-		
+
 		this.init = function(newController)
 		{
 			logEvent('init(): controller=' + (newController != null));
 			controller = newController;
 		};
-		
+
+		var etaCnt = 0;
+
 		this.cmd = function(cmd, args)
 		{
-			logEvent('cmd: <b>' + cmd + '</b>' + ((args) ? ', args' : ''), args);
-			
+			if (cmd !== msgAdapter.StateUpdate || args.id !== stateAdapter.Eta || (etaCnt++ % 60) === 0)
+			{
+				logEvent('cmd: <b>' + cmd + '</b>' + ((args) ? ', args' : ''), args);
+			}
+
 			switch (cmd)
 			{
-				case c.Progress:
+				case msgAdapter.Progress:
 				{
 					break;
 				}
-					
+
 				case msgAdapter.ViewerInit:
 				{
-					adapter = window.appViewClientAdapter;
+					adapter = cfg.adapter;
 					break;
 				}
-					
+
 				case c.InitUi:
 				{
 					break;
 				}
-					
+
 				case c.ShowInvites:
 				{
 					break;
@@ -77,10 +85,10 @@ define(function(require, exports, module)
 						currPhase = (args && args.val);
 						$('#currentPhase').text(currPhase && currPhase.phase);
 					}
-					
+
 					break;
 				}
-				
+
 				case msgAdapter.StateUpdate:
 				{
 					switch (args.id)
@@ -88,6 +96,7 @@ define(function(require, exports, module)
 						case stateAdapter.Name:
 						case stateAdapter.Eta:
 						case stateAdapter.Avatar:
+						case stateAdapter.InviteEnd:
 						{
 							break;
 						}
@@ -109,7 +118,7 @@ define(function(require, exports, module)
 							{
 								this.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase
 																, val: { phase: phase.Feedback, t: new Date().getTime() }
-																});								
+																});
 							}
 
 							break;
@@ -119,7 +128,7 @@ define(function(require, exports, module)
 						{
 							break;
 						}
-						
+
 						case stateAdapter.Phase:
 						{
 							break;
@@ -144,18 +153,18 @@ define(function(require, exports, module)
 
 			return null;
 		};
-		
+
 		this.notify = function(msg, args)
 		{
 			var url;
-			
+
 			switch (msg)
 			{
 				case m.FeedbackSubmitted:
 				{
 					break;
 				}
-					
+
 				default:
 				{
 					dbg('notify() - unknown msg: "' + msg + '"', args);
@@ -165,12 +174,12 @@ define(function(require, exports, module)
 
 			return null;
 		};
-		
-		
+
+
 		///////////////////////////////////////////////////////////////////////////
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////
-		
+
 		function logEvent(tag, data)
 		{
 			var div = $(document.createElement('div'));
@@ -178,12 +187,12 @@ define(function(require, exports, module)
 			outputText.append(div);
 			outputText.stop().animate({ scrollTop: outputText[0].scrollHeight }, 250);
 		}
-		
-		
+
+
 		///////////////////////////////////////////////////////////////////////////
 		// CALLBACKS
 		///////////////////////////////////////////////////////////////////////////
-		
+
 		///////////////////////////////////////////////////////////////////////////
 		// INIT
 		///////////////////////////////////////////////////////////////////////////
@@ -193,6 +202,6 @@ define(function(require, exports, module)
 		});
 	}
 
-	
+
 	module.exports = ViewManager;
 });

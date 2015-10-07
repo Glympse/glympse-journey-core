@@ -4,17 +4,17 @@
 ##Overview
 The Glympse Journey Core (GJC) component is the Journey engine, handling all interaction with the Glympse
 En Route suite of products. In addition, it handles all setup and interaction with the Glympse Viewer
-component, providing an API extension of the Glympse Viewer via its usage of the
-[Glympse View Client Adapter](https://github.com/Glympse/glympse-viewer-client-adapter).
+component, providing an API extension of the Glympse Viewer via its usage of the [Glympse Adapter].
 
 ##Structure
-The GJC is to be used as the main controller for any web-based EnRoute viewing experience. It facilitates
-all interaction with:
- 
+The GJC is to be used as the main controller for any web-based EnRoute viewing experience. It enables
+interaction with:
+
 - The Glympse Viewer
 - The Glympse En Route-generated data stream items
-- The Glympse View Client Adapter (used for passing state along to iframe-hosted experiences)
+- The Glympse Adapter (used for passing state along to iframe-hosted experiences)
 - Custom UI component faciliting the display and interaction with users -- the Journey "app"
+- Cards-based Journey applications (FUTURE)
 
 It operates on the core premise of EnRoute "phases", which are discrete instances of a customer's
 order journey. Please refer to the Glympse EnRoute programming guide for additional information
@@ -24,13 +24,14 @@ The GJC operates on a structured configration, covering:
 
 - Application settings
 - Glympse viewer configuration
-- Glympse view client adapter options
+- Glympse Adapter options
 
 Below are all of the available settings, as related to the GJC and its sub-components:
 
 	{
 		app: {
 			  dbg: 0|1 -- console.log output
+			, elementViewer: Selector-based target element identifier to place the viewer (i.e. '#glympser')
 			, screenOnly: bool --  Skip animations for fast screenshoting
 			, mapCompletedToFeedbak: bool -- Force feedback phase if completed phase is seen
 			, mapEtaNotLive: bool -- Treat Eta phase as live map phase (necessary in core?)
@@ -51,20 +52,20 @@ Below are all of the available settings, as related to the GJC and its sub-compo
 				... , KEY1: VALUE1 ...
 				... etc. ...
 			}
-			... additional options passed along to the connected viewing component ... 
+			... additional options passed along to the connected viewing component ...
 		},
-		
+
 		viewer: {
 			... Glympse viewer-specific settings ...
 		},
-		
+
 		adapter: {
 			  hideEvents: false -- do not change (debugging option)
 			, hideUpdates: false -- do not change (debugging option)
-			, element: $('#VIEWER_ELEMENT_ID') -- #VIEWER_ELEMENT_ID is where the Glympse Viewer is to be displayed
+			, svcGlympse: string -- Protocol-less base URL to Glympse API server (default: //api.glympse.com/v2/)
 		}
 	}
-	
+
 
 ##ViewManager setup
 After the GJC component is properly set up and initialized with an EnRoute-based
@@ -84,7 +85,7 @@ public member functions:
 - `cmd(cmd, args)`: A notification or command passed from the GJC controller to
   update the ViewManager-based app with updates to the EnRoute invite. `cmd` is
   a predefined identifier, defined either in the `glympse-journey-core.Defines.CMD`,
-  or `glympse-view-client-adapter.ViewClientAdapterDefines.MSG` namespaces. `args`
+  or `glympse-adapter.GlympseAdapterDefines.MSG` namespaces. `args`
   are the support values associated with the passed `cmd` value. [TO-DO: Outline
   these in more detail]
 - `notify(msg, args)`: Though not required, it is recommended to implement this
@@ -125,7 +126,7 @@ to properly bind the GJC with your ViewManager object:
 
 	var vm, core;
 	var cfg = CONFIG_OBJ;
-	
+
 	$(document).ready(function()
 	{
 		vm = new ViewManager(cfg.app);		// Create ViewManager instance
@@ -143,7 +144,7 @@ project GJC-based project. More details can be found at
 [https://github.com/Glympse/generator-glympse-journey-app](https://github.com/Glympse/generator-glympse-journey-app).
 
 
-##Local GJC project setup/build verification 
+##Local GJC project setup/build verification
 It is actually quite simple really!
 
 First make sure you have node.js installed... without that nothing works!  You can either install it
@@ -165,10 +166,14 @@ successful before final git submission for users.
 For final git submissions for public consumption, the following items should be covered:
 
 - Version information updates:
-  - `Gruntfile.js`: `data.config.moduleVersion` with the new [semantic](http://http://semver.org/) (MAJOR.MINOR.PATCH) version
+  - `Gruntfile.js`: `data.config.moduleVersion` with the new [semantic] (MAJOR.MINOR.PATCH) version
   - `bower.json`: `version` property (same value as used above)
 - This `README.md` with any relevent changes
 - `CHANGELOG.md` should be updated with high-level change info
 - `grunt` should return no warnings or errors
   - Note that `grunt` will also generate a compiled version of the GJC component, located in the root `builds/` directory
 - git checkin to the repo's master branch, including a tag with the same semantic version used in the config versioning updates, as described above (this allows bower consumers to update to this version)
+
+
+[Glympse Adapter]: https://github.com/Glympse/glympse-adapter
+[semantic]: http://http://semver.org/
