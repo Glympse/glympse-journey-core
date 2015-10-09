@@ -21,9 +21,6 @@ define(function(require, exports, module)
 	var msgAdapter = GlympseAdapterDefines.MSG;
 	var stateAdapter = GlympseAdapterDefines.STATE;
 
-	var cTimePromise = 'promise';
-	var cTimeFuture = 'future';
-
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
 	console.log(_id + ' v(1.2.0)');
@@ -42,16 +39,18 @@ define(function(require, exports, module)
 
 		// consts
 		var dbg = lib.dbg(_id, cfg.dbg);
+		var msgDataUpdate = msgAdapter.DataUpdate;
+		var msgStateUpdate = msgAdapter.StateUpdate;
 
 		// state
 		var that = this;
 		var adapter;
 		var currPhase = null;
-		var isAbandoned = false;
 		var pushedBase = false;
 		var timeStart = 0;
 		var viewManager = vm;
 		var initialized = false;
+		var lastUpdated = 0;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -71,26 +70,26 @@ define(function(require, exports, module)
 
 			switch (msg)
 			{
-				case msgAdapter.StateUpdate:
+				case msgStateUpdate:
 				{
-					if (initialized && !isAbandoned)
+					if (initialized)
 					{
-						viewManager.cmd(msg, args);
+						parseState(args)
 					}
 
-					if (args.id === stateAdapter.NoInvites)
-					{
-						isAbandoned = true;
-					}
+					//if (args.id === stateAdapter.NoInvites)
+					//{
+					//	isAbandoned = true;
+					//}
 					break;
 				}
 
-				case dataUpdate:
+				case msgDataUpdate:
 				{
 					// Format: { id:.., data:[ p0, p1, ..., pN ] }
-					if (initialized && !isAbandoned)
+					if (initialized)
 					{
-						parseData(args && args.data);
+						parseData(args && args.data, false);
 					}
 
 					break;
@@ -126,12 +125,23 @@ define(function(require, exports, module)
 					//dbg('>>> Properties on initial invite', adapter.map.getInviteProperties());
 					var oProps = adapter.map.getInviteProperties();
 					var props = [];
+					var stateProps = Object.keys(stateAdapter).map(mapAdapterStateKey);
+
 					for (var id in oProps)
 					{
-						props.push($.extend(oProps[id], { n: id }));
+						var prop = oProps[id];
+
+						if (stateProps.indexOf(id) >= 0)
+						{
+							parseState({ id: id, t: prop.t, val: prop.v });
+						}
+						else
+						{
+							props.push($.extend(oProps[id], { n: id }));
+						}
 					}
 
-					parseData(props);
+					parseData(props, true);
 
 					if (!currPhase)
 					{
@@ -141,8 +151,8 @@ define(function(require, exports, module)
 						// it is a regular Glympse. Generally, demo mode will set
 						// the desired defaultPhase, utilizing something like demobot0
 						// as the invite.
-						currPhase = { phase: (cfg.defaultPhase || p.Live), t: timeStart };
-						viewManager.cmd(dataUpdate, { id: stateAdapter.Phase, val: currPhase });
+						setCurrentPhase((cfg.defaultPhase || p.Live), timeStart);
+						sendCurrentPhase();
 					}
 
 					setTimeout(function()
@@ -180,42 +190,130 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
+		function generateStateData(id, t, val)
+		{
+			return { id: id, t: t, val: val };
+		}
+
+		function sendState(id, t, val)
+		{
+			viewManager.cmd(msgStateUpdate, generateStateData(id, t, val));
+		}
+
 		function handleForcePhase(newPhase)
 		{
 			currPhase = newPhase;
-			viewManager.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase
-												   , val: currPhase });
+			sendCurrentPhase();
 		}
 
 		function handleAbortUpdate()
 		{
-			currPhase = { phase: p.Aborted, t: new Date().getTime() };
+			setCurrentPhase(p.Aborted, new Date().getTime());
 
 			// Generate a datastream element to parse
-			that.notify(msgAdapter.DataUpdate
-					   , { id:'inv-ite'
-						 , data:
-						 [
-							 { t: new Date().getTime(), n: 'phase', v: currPhase.phase }
-						 ]
-						 }
-					   );
+			that.notify(msgStateUpdate, generateStateData(stateAdapter.Phase, new Date().getTime(), currPhase));
 		}
 
+		function setCurrentPhase(idPhase, t)
+		{
+			currPhase = { phase: idPhase, t: t };
+		}
 
-		///////////////////////////////////////////////////////////////////////////////
-		// UTILITY
-		///////////////////////////////////////////////////////////////////////////////
+		function sendCurrentPhase()
+		{
+			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
+		}
+
+		function mapAdapterStateKey(key)
+		{
+			return stateAdapter[key];
+		}
+
+		function updateLastUpdated(t)
+		{
+			if (t <= lastUpdated)
+			{
+				return;
+			}
+
+			lastUpdated = t;
+			sendState(s.LastUpdate, t, t);
+		}
+
+		function parseState(data)
+		{
+			var id = data.id;
+			var val = data.val;
+			var t = data.t;
+			var lastUpdate = lastUpdated;
+
+			//dbg('>>>>> parseState - (' + id + ')', data);
+
+			switch (id)
+			{
+				case stateAdapter.Eta:
+				{
+					// Parse "special" eta info
+					if (val)
+					{
+						if (val.type === s.PromiseTime || val.type === s.FutureTime)
+						{
+							sendState(val.type, t, val);
+							return;
+						}
+					}
+
+					break;
+				}
+
+				case stateAdapter.Phase:
+				{
+					setCurrentPhase(val, t);
+					sendCurrentPhase();
+
+					/*if (currPhase.phase === p.Aborted)
+					{
+						isAbandoned = true;
+					}*/
+
+					updateLastUpdated(t);
+					return;
+				}
+
+				case stateAdapter.Destination:
+				{
+					lastUpdate = (t > lastUpdate) ? t : lastUpdate;
+					break;
+				}
+
+				case stateAdapter.InviteStart:
+				{
+					lastUpdate = (t > lastUpdate) ? t : lastUpdate;
+					timeStart = Number(val);
+					break;
+				}
+
+				default:
+				{
+					//dbg('Unhandled state: ' + id, data);
+				}
+			}
+
+			// Pass along to app container as well
+			viewManager.cmd(msgStateUpdate, data);
+
+			// Push lastUpdated info, if any
+			updateLastUpdated(lastUpdate);
+		}
 
 		function parseData(data)
 		{
+			var customData;
+			var lastUpdate = lastUpdated;
+
 			var arrivalFrom = -1;
 			var arrivalTo = -1;
 			var arrivalOffset = 0;
-			var update = msgAdapter.DataUpdate;
-			var lastUpdated = 0;
-
-			//dbg('parseData', data);
 
 			for (var i = 0, len = data.length; i < len; i++)
 			{
@@ -226,53 +324,10 @@ define(function(require, exports, module)
 
 				switch (id)
 				{
-					case stateAdapter.Eta:
-					{
-						// We're only interested in eta for its promise time in the DataUpdate,
-						// as the adapter will pass along continuous current Eta info.
-						if (val)
-						{
-							if (val.type === s.PromiseTime || val.type === s.FutureTime)
-							{
-								viewManager.cmd(update, { id: val.type, val: val });
-							}
-						}
-
-						break;
-					}
-
-					case stateAdapter.Phase:
-					{
-						lastUpdated = (t > lastUpdated) ? t : lastUpdated;
-						currPhase = { phase: val, t: t };
-						viewManager.cmd(update, { id: id, val: currPhase });
-
-						if (currPhase.phase === p.Aborted)
-						{
-							isAbandoned = true;
-						}
-
-						break;
-					}
-
-					case stateAdapter.Destination:
-					{
-						lastUpdated = (t > lastUpdated) ? t : lastUpdated;
-						viewManager.cmd(update, { id: id, val: val });
-						break;
-					}
-
-					case stateAdapter.InviteStart:
-					{
-						lastUpdated = (t > lastUpdated) ? t : lastUpdated;
-						timeStart = Number(val);
-						break;
-					}
-
 					case s.Visibility:
 					{
-						//dbg('VISIBILITY', val);
-						viewManager.cmd(update, { id: id, val: val });
+						lastUpdate = (t > lastUpdate) ? t : lastUpdate;
+						sendState(id, t, val);
 						break;
 					}
 
@@ -281,7 +336,7 @@ define(function(require, exports, module)
 						if (!pushedBase)
 						{
 							pushedBase = true;
-							viewManager.cmd(update, { id: id, val: val });
+							sendState(id, t, val);
 						}
 
 						break;
@@ -290,7 +345,7 @@ define(function(require, exports, module)
 					case s.OrderInfo:
 					{
 						cfg.idOrder = val;
-						viewManager.cmd(update, { id: id, val: val });
+						sendState(id, t, val);
 						break;
 					}
 
@@ -312,21 +367,35 @@ define(function(require, exports, module)
 						arrivalOffset = Number(vals[0]) * 60 + Number(vals[1]);
 						break;
 					}
+
+					default:
+					{
+						if (!customData)
+						{
+							customData = [];
+						}
+
+						customData.push(item);
+					}
 				}
 			}
 
 			if (arrivalFrom > 0 && arrivalTo > 0)
 			{
 				// Always show in local time where task was created
-				var d = ((new Date()).getTimezoneOffset() + arrivalOffset) * 60 * 1000;
-				viewManager.cmd(update, { id: s.ArrivalRange, val: { from: arrivalFrom + d
-																   , to: arrivalTo + d
-																   } });
+				var tNew = new Date();
+				var d = (tNew.getTimezoneOffset() + arrivalOffset) * 60 * 1000;
+
+				sendState(s.ArrivalRange, tNew.getTime(), { from: arrivalFrom + d, to: arrivalTo + d });
 			}
 
-			if (lastUpdated)
+			// Push lastUpdated info, if any
+			updateLastUpdated(lastUpdate);
+
+			// Pass along any unknown/custom data properties
+			if (customData)
 			{
-				viewManager.cmd(update, { id: s.LastUpdate, val: lastUpdated });
+				viewManager.cmd(msgDataUpdate, customData);
 			}
 		}
 

@@ -80,17 +80,13 @@ define(function(require, exports, module)
 
 				case msgAdapter.DataUpdate:
 				{
-					if (args.id === stateAdapter.Phase)
-					{
-						currPhase = (args && args.val);
-						$('#currentPhase').text(currPhase && currPhase.phase);
-					}
-
+					dbg('DataUpdate() unhandled data', args);
 					break;
 				}
 
 				case msgAdapter.StateUpdate:
 				{
+					//dbg('STATE', args);
 					switch (args.id)
 					{
 						case stateAdapter.Name:
@@ -131,12 +127,14 @@ define(function(require, exports, module)
 
 						case stateAdapter.Phase:
 						{
+							currPhase = (args && args.val);
+							$('#currentPhase').text(currPhase && currPhase.phase);
 							break;
 						}
 
 						default:
 						{
-							dbg('StateUpdate() unknown id: "' + args.id + '" ', args.val);
+							dbg('StateUpdate() unknown id: "' + args.id + '" ', args);
 							break;
 						}
 					}
