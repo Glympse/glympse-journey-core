@@ -1,24 +1,29 @@
 #Glympse Journey (Core)
-=======================
 
 ##Overview
-The Glympse Journey Core (GJC) component is the Journey engine, handling all interaction with the Glympse
-En Route suite of products. In addition, it handles all setup and interaction with the Glympse Viewer
-component, providing an API extension of the Glympse Viewer via its usage of the [Glympse Adapter].
+The Glympse Journey Core (GJC) component is the Journey engine, handling all
+interaction with the Glympse En Route suite of products. In addition, it handles
+all setup and interaction with the [Glympse Adapter] (GA) component, providing an
+interface to the Glympse Viewer and handling of external iframe-based hosting
+scenarios.
 
 ##Structure
-The GJC is to be used as the main controller for any web-based EnRoute viewing experience. It enables
-interaction with:
+The GJC is to be used as the main controller for any web-based EnRoute viewing 
+experience. It enables interaction with:
 
 - The Glympse Viewer
 - The Glympse En Route-generated data stream items
 - The Glympse Adapter (used for passing state along to iframe-hosted experiences)
-- Custom UI component faciliting the display and interaction with users -- the Journey "app"
+- Custom UI component faciliting the display and interaction with users -- the
+  Journey "app"
 - Cards-based Journey applications (FUTURE)
 
-It operates on the core premise of EnRoute "phases", which are discrete instances of a customer's
-order journey. Please refer to the Glympse EnRoute programming guide for additional information
-related to the definition of each discrete phase instance.
+A high-level flow is shown below:
+![Glympse Adapter Overview](img/overview.png)
+
+It operates on the core premise of EnRoute "phases", which are discrete instances of a
+customer's order journey. Please refer to the Glympse EnRoute programming guide for
+additional information related to the definition of each discrete phase instance.
 
 The GJC operates on a structured configration, covering:
 
@@ -104,11 +109,40 @@ app to drive the platform aspects of the Journey experience:
 
 Identical to the ViewManager `notify` interface described above, the messages/
 content passed from the ViewManager to the GJC are used to drive various features
-provided by the GJC (i.e., Feedback, Glympse Viewer API endpoints, custom external
+provided by the GJC (i.e., Feedback, Glympse Adapter endpoints, custom external
 iframe interfaces, etc.)
 
-[TODO: Document available messages, associated arguments, and potential return
-values]
+###Commands
+In addition to all of the commands defined by the GA, the GJC currently only
+exposes one new command, which is defined in the
+`glympse-journey-core/Defines.CMD.*` object:
+
+id        |args       |info
+:---------|:----------|:------
+**InitUi**|_timeStart_|Signals to app that all resources have been loaded and all state is current
+
+In general, when the `InitUi` command is received, the hosting application is
+safe to begin interfacing with the GJC, GA, and the Glympse viewer, as necessary.
+
+###Messages
+Additional `StateUpdate` state types have been introduced to ease the use of the
+Glympse data stream properties added by the Glympse EnRoute system. All of
+these will appear in a `StateUpdate` command for GJC, as shown below:
+
+![Glympse Adapter Overview](img/state-flow.png)
+
+GJC-specific state types can be referenced in the `glympse-journey-core/Defines.STATE.*`
+object. Details about each type are described below:
+
+id               |val         |info
+:----------------|:-----------|:------
+**ArrivalRange** |`{ from: epoch, to: epoch }`| Specifies the estimated time of arrival range, optional in the owner's timezone, if specified.
+**FutureTime**   |`ETA format`| `eta` data is time (in epoch format) when arrival is expect.
+**LastUpdate**   |`epoch`| Time sender last actively updated the Glympse invite. 
+**OrderInfo**    |`custom`| String/JSON-formatted data blob with order information.
+**PromiseTime**  |`ETA format`| `eta` data is the amount of time (in milliseconds) of expected arrival.
+**StoreLocation**|`{ lat:.., lng:.., name:.. }`| Position and name of Glympse inviter's origin (i.e. store).
+**Visibility**   |`{ location: 'hidden'/'visible' }`| Specifies if sender is actively sharing location/eta information. If '`hidden`', all state of the Glympse invite is invalidated/hidden.
 
 
 ##GJC Feedback component

@@ -9,7 +9,6 @@ define(function(require, exports, module)
 		{
 			  InitUi: 'InitUi'
 			, SendFeedback: 'SendFeedback'		// From UI to provider
-			, ShowInvites: 'ShowInvites'
 			, UpdateAuth: 'UpdateAuth'
 		}
 
@@ -17,27 +16,25 @@ define(function(require, exports, module)
 		{
 			  TokenUpdate: 'TokenUpdate'				// From feedback provider to UI component
 			, FeedbackSubmitted: 'FeedbackSubmitted'	// From feedback provider to UI component
-			, AdapterReady: 'AdapterReady'
 			, ForcePhase: 'ForcePhase'					// Used by ViewController/app for forced view updates (i.e. demos)
 			, ForceAbort: 'ForceAbort'
 		}
 
 		, STATE:
 		{
-			// Data-stream properties
-			  ApptFrom: 'appt_from'
-			, ApptTo: 'appt_to'
-			, ApptTimezone: 'appt_tz'
+			// StateUpdate items
+			  ArrivalRange: 'ArrivalRange'		// ?? App-specific?
 			, FutureTime: 'future'
+			, LastUpdate: 'LastUpdate'
 			, OrderInfo: 'order_id'
 			, PromiseTime: 'promise'
 			, StoreLocation: 'base_location'
 			, Visibility: 'visibility'
 
-			// Meta-state
-			, ArrivalRange: 'ArrivalRange'		// ?? App-specific?
-			, LastUpdate: 'LastUpdate'
-			, LastUpdated: 'LastUpdated'
+			// Supporting data-stream properties (not broadcast)
+			, ApptFrom: 'appt_from'
+			, ApptTo: 'appt_to'
+			, ApptTimezone: 'appt_tz'
 		}
 
 		, PHASE:
