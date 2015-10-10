@@ -15,8 +15,8 @@ define(function(require, exports, module)
 	var m = Defines.MSG;
 	var phase = Defines.PHASE;
 
-	var stateAdapter = GlympseAdapterDefines.STATE;
-	var msgAdapter = GlympseAdapterDefines.MSG;
+	var adapterState = GlympseAdapterDefines.STATE;
+	var adapterMsg = GlympseAdapterDefines.MSG;
 
 
 	// Exported class
@@ -50,19 +50,19 @@ define(function(require, exports, module)
 
 		this.cmd = function(cmd, args)
 		{
-			if (cmd !== msgAdapter.StateUpdate || args.id !== stateAdapter.Eta || (etaCnt++ % 60) === 0)
+			if (cmd !== adapterMsg.StateUpdate || args.id !== adapterState.Eta || (etaCnt++ % 60) === 0)
 			{
 				logEvent('cmd: <b>' + cmd + '</b>' + ((args) ? ', args' : ''), args);
 			}
 
 			switch (cmd)
 			{
-				case msgAdapter.Progress:
+				case adapterMsg.Progress:
 				{
 					break;
 				}
 
-				case msgAdapter.ViewerInit:
+				case adapterMsg.ViewerInit:
 				{
 					adapter = cfg.adapter;
 					break;
@@ -73,33 +73,28 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case c.ShowInvites:
-				{
-					break;
-				}
-
-				case msgAdapter.DataUpdate:
+				case adapterMsg.DataUpdate:
 				{
 					dbg('DataUpdate() unhandled data', args);
 					break;
 				}
 
-				case msgAdapter.StateUpdate:
+				case adapterMsg.StateUpdate:
 				{
 					//dbg('STATE', args);
 					switch (args.id)
 					{
-						case stateAdapter.Name:
-						case stateAdapter.Eta:
-						case stateAdapter.Avatar:
-						case stateAdapter.InviteEnd:
+						case adapterState.Name:
+						case adapterState.Eta:
+						case adapterState.Avatar:
+						case adapterState.InviteEnd:
 						{
 							break;
 						}
 
-						case stateAdapter.Arrived:
+						case adapterState.Arrived:
 						{
-							this.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase
+							this.cmd(adapterMsg.DataUpdate, { id: adapterState.Phase
 															, val: { phase: (args.val.hasArrived) ? phase.Arrived : phase.Live
 																   , t: args.val.t
 																   }
@@ -107,12 +102,12 @@ define(function(require, exports, module)
 							break;
 						}
 
-						case stateAdapter.Expired:
+						case adapterState.Expired:
 						{
 							var isExpired = args.val;
 							if (isExpired)
 							{
-								this.cmd(msgAdapter.DataUpdate, { id: stateAdapter.Phase
+								this.cmd(adapterMsg.DataUpdate, { id: adapterState.Phase
 																, val: { phase: phase.Feedback, t: new Date().getTime() }
 																});
 							}
@@ -120,12 +115,12 @@ define(function(require, exports, module)
 							break;
 						}
 
-						case stateAdapter.NoInvites:
+						case adapterState.NoInvites:
 						{
 							break;
 						}
 
-						case stateAdapter.Phase:
+						case adapterState.Phase:
 						{
 							currPhase = (args && args.val);
 							$('#currentPhase').text(currPhase && currPhase.phase);

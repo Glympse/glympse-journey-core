@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.2.0)');
+	console.log(_id + ' v(1.3.0)');
 
 
 	/*
@@ -64,8 +64,6 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			var dataUpdate = msgAdapter.DataUpdate;
-
 			//dbg('** NOTIFY ** - ' + msg, args);
 
 			switch (msg)
@@ -74,7 +72,7 @@ define(function(require, exports, module)
 				{
 					if (initialized)
 					{
-						parseState(args)
+						parseState(args);
 					}
 
 					//if (args.id === stateAdapter.NoInvites)
@@ -98,22 +96,6 @@ define(function(require, exports, module)
 				case msgAdapter.Progress:
 				{
 					viewManager.cmd(msg, args.curr / args.total);
-					break;
-				}
-
-				case msgAdapter.InviteReady:
-				{
-					break;
-				}
-
-				case msgAdapter.ViewerInit:
-				{
-					viewManager.cmd(msg, args);
-					break;
-				}
-
-				case msgAdapter.AdapterReady:
-				{
 					break;
 				}
 
@@ -141,6 +123,7 @@ define(function(require, exports, module)
 						}
 					}
 
+					// Handle Journey/custom properties
 					parseData(props, true);
 
 					if (!currPhase)
@@ -177,8 +160,9 @@ define(function(require, exports, module)
 
 				default:
 				{
-					dbg('notify(): unknown msg: "' + msg + '"', args);
-					break;
+					// Pass along any unknown/unused commands
+					dbg('notify(): unhandled msg: "' + msg + '"', args);
+					return viewManager.cmd(msg, args);
 				}
 			}
 
@@ -195,9 +179,19 @@ define(function(require, exports, module)
 			return { id: id, t: t, val: val };
 		}
 
+		function setCurrentPhase(idPhase, t)
+		{
+			currPhase = { phase: idPhase, t: t };
+		}
+
 		function sendState(id, t, val)
 		{
 			viewManager.cmd(msgStateUpdate, generateStateData(id, t, val));
+		}
+
+		function sendCurrentPhase()
+		{
+			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
 		}
 
 		function handleForcePhase(newPhase)
@@ -210,18 +204,8 @@ define(function(require, exports, module)
 		{
 			setCurrentPhase(p.Aborted, new Date().getTime());
 
-			// Generate a datastream element to parse
-			that.notify(msgStateUpdate, generateStateData(stateAdapter.Phase, new Date().getTime(), currPhase));
-		}
-
-		function setCurrentPhase(idPhase, t)
-		{
-			currPhase = { phase: idPhase, t: t };
-		}
-
-		function sendCurrentPhase()
-		{
-			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
+			// Re-sync core + app
+			parseState(msgStateUpdate, generateStateData(stateAdapter.Phase, new Date().getTime(), currPhase));
 		}
 
 		function mapAdapterStateKey(key)
@@ -293,10 +277,10 @@ define(function(require, exports, module)
 					break;
 				}
 
-				default:
+				/*default:
 				{
-					//dbg('Unhandled state: ' + id, data);
-				}
+					dbg('Unhandled state: ' + id, data);
+				}*/
 			}
 
 			// Pass along to app container as well
