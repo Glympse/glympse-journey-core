@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.3.0)');
+	console.log(_id + ' v(1.3.1)');
 
 
 	/*
@@ -297,7 +297,7 @@ define(function(require, exports, module)
 
 			var arrivalFrom = -1;
 			var arrivalTo = -1;
-			var arrivalOffset = 0;
+			var arrivalOffset = null;	// Flag to indicate not set
 
 			for (var i = 0, len = data.length; i < len; i++)
 			{
@@ -368,7 +368,9 @@ define(function(require, exports, module)
 			{
 				// Always show in local time where task was created
 				var tNew = new Date();
-				var d = (tNew.getTimezoneOffset() + arrivalOffset) * 60 * 1000;
+				var d = (arrivalOffset === null || isNaN(arrivalOffset))
+							? 0	// No offset at all if arrivalOffset is invalid/doesn't come through
+							: (tNew.getTimezoneOffset() + arrivalOffset) * 60 * 1000;
 
 				sendState(s.ArrivalRange, tNew.getTime(), { from: arrivalFrom + d, to: arrivalTo + d });
 			}
