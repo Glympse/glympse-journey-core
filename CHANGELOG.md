@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.3.3   | 2014/10/19 | Ensure default "phase" info is passed first, if not already sent 
 1.3.2   | 2015/10/19 | Force "phase" as initial state property advertised during ViewerReady message
 1.3.1	| 2015/10/19 | Fix ArrivalRange offset calculation
 1.3.0   | 2015/10/8  | Align state and data messaging models (breaks older clients)
