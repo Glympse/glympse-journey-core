@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.3.1)');
+	console.log(_id + ' v(1.3.2)');
 
 
 	/*
@@ -109,10 +109,26 @@ define(function(require, exports, module)
 					var props = [];
 					var stateProps = Object.keys(stateAdapter).map(mapAdapterStateKey);
 
+					// Force phase first!
+					var idPhase = stateAdapter.Phase;
+					var prop = oProps[idPhase];
+
+					stateProps.splice(stateProps.indexOf(idPhase), 1);
+
+					if (prop)
+					{
+						parseState({ id: idPhase, t: prop.t, val: prop.v });
+					}
+
 					for (var id in oProps)
 					{
-						var prop = oProps[id];
+						// ignore already-handled phase
+						if (id === idPhase)
+						{
+							continue;
+						}
 
+						prop = oProps[id];
 						if (stateProps.indexOf(id) >= 0)
 						{
 							parseState({ id: id, t: prop.t, val: prop.v });
