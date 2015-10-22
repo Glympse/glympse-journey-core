@@ -51,6 +51,8 @@ define(function(require, exports, module)
 		var viewManager = vm;
 		var initialized = false;
 		var lastUpdated = 0;
+		var phaseDataQueue = new Object();
+		var phaseStateQueue = new Object();
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -210,6 +212,44 @@ define(function(require, exports, module)
 			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
 		}
 
+		// This function detects and sends any data that is phase-sensitive.
+		//  For example, the avatar might only be sent during the LIVE phase,
+		//  so when the avatar comes in instead of sending right away it adds it
+		//  to the phaseDataQueue object and then this function is called.
+		//  If there is data to send and it is the correct phase to send it in,
+		//  defined in the viewer page in the cfg, then it sends the data
+		//  and removes it from the phaseDataQueue object.
+		function sendPhaseData()
+		{
+			if ($.isEmptyObject(phaseDataQueue)) {
+				return;
+			}
+
+			if (phaseDataQueue[stateAdapter.Avatar] && cfg.showAvatar && cfg.showAvatar.indexOf(currPhase.phase) >= 0) {
+				viewManager.cmd(msgStateUpdate, phaseDataQueue[stateAdapter.Avatar]);
+				delete phaseDataQueue[stateAdapter.Avatar];
+			}
+
+			if (phaseDataQueue[stateAdapter.Name] && cfg.showName && cfg.showName.indexOf(currPhase.phase) >= 0) {
+				viewManager.cmd(msgStateUpdate, phaseDataQueue[stateAdapter.Name]);
+				delete phaseDataQueue[stateAdapter.Name];
+			}
+		}
+
+
+		function sendPhaseState()
+		{
+			if ($.isEmptyObject(phaseStateQueue)) {
+				return;
+			}
+
+			if (phaseStateQueue[s.DriverId] && cfg.showDriverId && cfg.showDriverId.indexOf(currPhase.phase) >= 0) {
+				var item = phaseStateQueue[s.DriverId]
+				sendState(s.DriverId, item.t, item.v);
+				delete phaseStateQueue[s.DriverId];
+			}
+		}
+
 		function handleForcePhase(newPhase)
 		{
 			currPhase = newPhase;
@@ -271,6 +311,9 @@ define(function(require, exports, module)
 					setCurrentPhase(val, t);
 					sendCurrentPhase();
 
+					sendPhaseData();
+					sendPhaseState();
+
 					/*if (currPhase.phase === p.Aborted)
 					{
 						isAbandoned = true;
@@ -291,6 +334,15 @@ define(function(require, exports, module)
 					lastUpdate = (t > lastUpdate) ? t : lastUpdate;
 					timeStart = Number(val);
 					break;
+				}
+
+				case stateAdapter.Name:
+				case stateAdapter.Avatar:
+				{
+					// add to phaseDataQueue and send later
+					phaseDataQueue[id] = data;
+					sendPhaseData();
+					return;
 				}
 
 				/*default:
@@ -366,6 +418,18 @@ define(function(require, exports, module)
 						var vals = val.split(':');
 						arrivalOffset = Number(vals[0]) * 60 + Number(vals[1]);
 						break;
+					}
+
+					case s.DriverId:
+					{
+						phaseStateQueue[id] = item;
+						sendPhaseState();
+						return;
+					}
+
+					case s.Duration:
+					{
+						sendState(id, t, val);
 					}
 
 					default:

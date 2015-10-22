@@ -30,6 +30,8 @@ define(function(require, exports, module)
 			, PromiseTime: 'promise'
 			, StoreLocation: 'base_location'
 			, Visibility: 'visibility'
+			, DriverId: 'driver_id'
+			, Duration: 'duration'
 
 			// Supporting data-stream properties (not broadcast)
 			, ApptFrom: 'appt_from'
