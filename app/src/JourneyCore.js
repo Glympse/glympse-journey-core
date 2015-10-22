@@ -51,8 +51,7 @@ define(function(require, exports, module)
 		var viewManager = vm;
 		var initialized = false;
 		var lastUpdated = 0;
-		var phaseDataQueue = new Object();
-		var phaseStateQueue = new Object();
+		var phaseStateQueue = {};
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -212,42 +211,38 @@ define(function(require, exports, module)
 			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
 		}
 
-		// This function detects and sends any data that is phase-sensitive.
+		// This function detects and sends any states that is phase-sensitive.
 		//  For example, the avatar might only be sent during the LIVE phase,
 		//  so when the avatar comes in instead of sending right away it adds it
-		//  to the phaseDataQueue object and then this function is called.
+		//  to the phaseStateQueue object and then this function is called.
 		//  If there is data to send and it is the correct phase to send it in,
 		//  defined in the viewer page in the cfg, then it sends the data
-		//  and removes it from the phaseDataQueue object.
-		function sendPhaseData()
-		{
-			if ($.isEmptyObject(phaseDataQueue)) {
-				return;
-			}
-
-			if (phaseDataQueue[stateAdapter.Avatar] && cfg.showAvatar && cfg.showAvatar.indexOf(currPhase.phase) >= 0) {
-				viewManager.cmd(msgStateUpdate, phaseDataQueue[stateAdapter.Avatar]);
-				delete phaseDataQueue[stateAdapter.Avatar];
-			}
-
-			if (phaseDataQueue[stateAdapter.Name] && cfg.showName && cfg.showName.indexOf(currPhase.phase) >= 0) {
-				viewManager.cmd(msgStateUpdate, phaseDataQueue[stateAdapter.Name]);
-				delete phaseDataQueue[stateAdapter.Name];
-			}
-		}
-
-
+		//  and removes it from the phaseStateQueue object.
 		function sendPhaseState()
 		{
-			if ($.isEmptyObject(phaseStateQueue)) {
+			if ($.isEmptyObject(phaseStateQueue) && $.isEmptyObject(cfg.showPhaseStates)) {
 				return;
 			}
 
-			if (phaseStateQueue[s.DriverId] && cfg.showDriverId && cfg.showDriverId.indexOf(currPhase.phase) >= 0) {
-				var item = phaseStateQueue[s.DriverId]
+			if (phaseStateQueue[s.DriverId] && cfg.showPhaseStates.driverId && cfg.showPhaseStates.driverId.indexOf(currPhase.phase) >= 0)
+			{
+				var item = phaseStateQueue[s.DriverId];
 				sendState(s.DriverId, item.t, item.v);
 				delete phaseStateQueue[s.DriverId];
 			}
+
+			if (phaseStateQueue[stateAdapter.Avatar] && cfg.showPhaseStates.driverAvatar && cfg.showPhaseStates.driverAvatar.indexOf(currPhase.phase) >= 0)
+			{
+				viewManager.cmd(msgStateUpdate, phaseStateQueue[stateAdapter.Avatar]);
+				delete phaseStateQueue[stateAdapter.Avatar];
+			}
+
+			if (phaseStateQueue[stateAdapter.Name] && cfg.showPhaseStates.driverName && cfg.showPhaseStates.driverName.indexOf(currPhase.phase) >= 0)
+			{
+				viewManager.cmd(msgStateUpdate, phaseStateQueue[stateAdapter.Name]);
+				delete phaseStateQueue[stateAdapter.Name];
+			}
+
 		}
 
 		function handleForcePhase(newPhase)
@@ -311,7 +306,6 @@ define(function(require, exports, module)
 					setCurrentPhase(val, t);
 					sendCurrentPhase();
 
-					sendPhaseData();
 					sendPhaseState();
 
 					/*if (currPhase.phase === p.Aborted)
@@ -339,9 +333,8 @@ define(function(require, exports, module)
 				case stateAdapter.Name:
 				case stateAdapter.Avatar:
 				{
-					// add to phaseDataQueue and send later
-					phaseDataQueue[id] = data;
-					sendPhaseData();
+					phaseStateQueue[id] = data;
+					sendPhaseState();
 					return;
 				}
 
@@ -425,11 +418,6 @@ define(function(require, exports, module)
 						phaseStateQueue[id] = item;
 						sendPhaseState();
 						return;
-					}
-
-					case s.Duration:
-					{
-						sendState(id, t, val);
 					}
 
 					default:
