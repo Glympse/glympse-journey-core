@@ -420,6 +420,12 @@ define(function(require, exports, module)
 						return;
 					}
 
+					case s.Duration:
+					{
+						sendState(id, t, val);
+						break;
+					}
+
 					default:
 					{
 						if (!customData)
