@@ -19,7 +19,7 @@ module.exports = function(grunt) {
 		distExports: 'dist',
 		moduleIn: 'JourneyCore',
 		moduleOut: 'glympse-journey-core',
-		moduleVersion: '1.3.4',
+		moduleVersion: '1.4.0',
 		buildsDir: 'builds'
       }
     }
