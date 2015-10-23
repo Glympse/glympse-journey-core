@@ -18,12 +18,12 @@ define(function(require, exports, module)
 	var s = Defines.STATE;
 	var p = Defines.PHASE;
 
-	var msgAdapter = GlympseAdapterDefines.MSG;
-	var stateAdapter = GlympseAdapterDefines.STATE;
+	var adapterMsg = GlympseAdapterDefines.MSG;
+	var adapterState = GlympseAdapterDefines.STATE;
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.3.3)');
+	console.log(_id + ' v(1.4.0)');
 
 
 	/*
@@ -39,8 +39,8 @@ define(function(require, exports, module)
 
 		// consts
 		var dbg = lib.dbg(_id, cfg.dbg);
-		var msgDataUpdate = msgAdapter.DataUpdate;
-		var msgStateUpdate = msgAdapter.StateUpdate;
+		var msgDataUpdate = adapterMsg.DataUpdate;
+		var msgStateUpdate = adapterMsg.StateUpdate;
 
 		// state
 		var that = this;
@@ -51,6 +51,8 @@ define(function(require, exports, module)
 		var viewManager = vm;
 		var initialized = false;
 		var lastUpdated = 0;
+		var phaseStateFilter = cfg.phaseStateFilter;
+		var phaseStateQueue = {};
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -65,7 +67,6 @@ define(function(require, exports, module)
 		this.notify = function(msg, args)
 		{
 			//dbg('** NOTIFY ** - ' + msg, args);
-
 			switch (msg)
 			{
 				case msgStateUpdate:
@@ -75,16 +76,11 @@ define(function(require, exports, module)
 						parseState(args);
 					}
 
-					//if (args.id === stateAdapter.NoInvites)
-					//{
-					//	isAbandoned = true;
-					//}
 					break;
 				}
 
 				case msgDataUpdate:
 				{
-					// Format: { id:.., data:[ p0, p1, ..., pN ] }
 					if (initialized)
 					{
 						parseData(args && args.data, false);
@@ -93,13 +89,13 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case msgAdapter.Progress:
+				case adapterMsg.Progress:
 				{
 					viewManager.cmd(msg, args.curr / args.total);
 					break;
 				}
 
-				case msgAdapter.ViewerReady:
+				case adapterMsg.ViewerReady:
 				{
 					initialized = true;
 
@@ -107,24 +103,24 @@ define(function(require, exports, module)
 					//dbg('>>> Properties on initial invite', adapter.map.getInviteProperties());
 					var oProps = adapter.map.getInviteProperties();
 					var props = [];
-					var stateProps = Object.keys(stateAdapter).map(mapAdapterStateKey);
+					var stateProps = Object.keys(adapterState).map(mapAdapterStateKey);
 
 					// Force phase first!
-					var idPhase = stateAdapter.Phase;
+					var idPhase = adapterState.Phase;
 					var prop = oProps[idPhase];
 
 					stateProps.splice(stateProps.indexOf(idPhase), 1);
 
 					if (prop)
 					{
-						parseState({ id: idPhase, t: prop.t, val: prop.v });
+						parseState(generateStateData(idPhase, prop.t, prop.v));
 					}
 
 					if (!currPhase)
 					{
 						timeStart = timeStart || (new Date()).getTime();
 
-						// If no phase, use a default, or force the Live phase, as
+						// If no phase, use a default or force the Live phase, as
 						// it is a regular Glympse. Generally, demo mode will set
 						// the desired defaultPhase, utilizing something like demobot0
 						// as the invite.
@@ -143,7 +139,7 @@ define(function(require, exports, module)
 						prop = oProps[id];
 						if (stateProps.indexOf(id) >= 0)
 						{
-							parseState({ id: id, t: prop.t, val: prop.v });
+							parseState(generateStateData(id, prop.t, prop.v));
 						}
 						else
 						{
@@ -164,14 +160,27 @@ define(function(require, exports, module)
 
 				case m.ForcePhase:
 				{
-					handleForcePhase(args);
+					currPhase = args;
+					sendCurrentPhase();
 					break;
 				}
 
 				case m.ForceAbort:
 				{
-					handleAbortUpdate();
+					setCurrentPhase(p.Aborted, new Date().getTime());
+					sendCurrentPhase();
 					break;
+				}
+
+				// Known but unprocessed in core
+				case adapterMsg.AdapterInit:
+				case adapterMsg.AdapterReady:
+				case adapterMsg.InviteInit:
+				case adapterMsg.InviteReady:
+				case adapterMsg.InviteAdded:
+				case adapterMsg.ViewerInit:
+				{
+					return viewManager.cmd(msg, args);
 				}
 
 				default:
@@ -190,43 +199,92 @@ define(function(require, exports, module)
 		// UTILITY
 		///////////////////////////////////////////////////////////////////////////////
 
+		/**
+		 * Generate proper format of data for a StateUpdate
+		 * @param   {String} id  State identifier
+		 * @param   {Number} t   Timestamp when state was generated
+		 * @param   {Object} val Value of updated state
+		 * @returns {Object} Formatted StateUpdate object value
+		 */
 		function generateStateData(id, t, val)
 		{
 			return { id: id, t: t, val: val };
 		}
 
+		/**
+		 * Update internally tracked Phase, consumeable by host app as necessary
+		 * @param {String} idPhase Phase identifier
+		 * @param {Number} t       Timestamp when Phase was generated
+		 */
 		function setCurrentPhase(idPhase, t)
 		{
 			currPhase = { phase: idPhase, t: t };
 		}
 
+		/**
+		 * Determine if a state should be filtered from broadcast, given current phase.
+		 * Note that the Phase state itself can never be filtered.
+		 * @param   {Object}  cfgState Full state object to save if filtered on current phase
+		 * @returns {Boolean} Flag if the passed state has been filtered/saved
+		 */
+		function phaseFilter(cfgState)
+		{
+			if (phaseStateFilter)
+			{
+				var id = cfgState.id;
+				var filter = phaseStateFilter[id];
+
+				if (filter && filter.length > 0 && id !== adapterState.Phase)
+				{
+					//dbg('id: ' + id + ', filter: ', filter);
+					if (filter.indexOf(currPhase.phase) < 0)
+					{
+						//dbg('!!!!!!!Filtered "' + id + '"', cfgState);
+						phaseStateQueue[id] = cfgState;
+						return true;
+					}
+				}
+			}
+
+			// Not/no longer filtered. Remove previous state from queue.
+			phaseStateQueue[id] = undefined;
+			return false;
+		}
+
+		/**
+		 * Broadcast an updated state, if it isn't filtered based on current Phase
+		 * @param {String} id  State identifier
+		 * @param {Number} t   State update timestamp
+		 * @param {Object} val Value of updated state
+		 */
 		function sendState(id, t, val)
 		{
-			viewManager.cmd(msgStateUpdate, generateStateData(id, t, val));
+			var cfgState = generateStateData(id, t, val);
+			if (phaseFilter(cfgState))
+			{
+				return;
+			}
+
+			viewManager.cmd(msgStateUpdate, cfgState);
 		}
 
+		/**
+		 * Broadcast updated Phase state, and send along any filtered phase-based
+		 * states, as necessary.
+		 */
 		function sendCurrentPhase()
 		{
-			sendState(stateAdapter.Phase, (currPhase && currPhase.t) || 0, currPhase);
-		}
+			sendState(adapterState.Phase, (currPhase && currPhase.t) || 0, currPhase);
 
-		function handleForcePhase(newPhase)
-		{
-			currPhase = newPhase;
-			sendCurrentPhase();
-		}
-
-		function handleAbortUpdate()
-		{
-			setCurrentPhase(p.Aborted, new Date().getTime());
-
-			// Re-sync core + app
-			parseState(msgStateUpdate, generateStateData(stateAdapter.Phase, new Date().getTime(), currPhase));
-		}
-
-		function mapAdapterStateKey(key)
-		{
-			return stateAdapter[key];
+			for (var id in phaseStateQueue)
+			{
+				var cfgState = phaseStateQueue[id];
+				//dbg('id=' + id + ', cfgState =' + cfgState);
+				if (cfgState && !phaseFilter(cfgState))
+				{
+					viewManager.cmd(msgStateUpdate, cfgState);
+				}
+			}
 		}
 
 		function updateLastUpdated(t)
@@ -248,10 +306,9 @@ define(function(require, exports, module)
 			var lastUpdate = lastUpdated;
 
 			//dbg('>>>>> parseState - (' + id + ')', data);
-
 			switch (id)
 			{
-				case stateAdapter.Eta:
+				case adapterState.Eta:
 				{
 					// Parse "special" eta info
 					if (val)
@@ -266,46 +323,49 @@ define(function(require, exports, module)
 					break;
 				}
 
-				case stateAdapter.Phase:
+				case adapterState.Phase:
 				{
 					setCurrentPhase(val, t);
 					sendCurrentPhase();
-
-					/*if (currPhase.phase === p.Aborted)
-					{
-						isAbandoned = true;
-					}*/
-
 					updateLastUpdated(t);
 					return;
 				}
 
-				case stateAdapter.Destination:
+				case adapterState.Destination:
 				{
 					lastUpdate = (t > lastUpdate) ? t : lastUpdate;
 					break;
 				}
 
-				case stateAdapter.InviteStart:
+				case adapterState.InviteStart:
 				{
 					lastUpdate = (t > lastUpdate) ? t : lastUpdate;
 					timeStart = Number(val);
 					break;
 				}
 
-				/*default:
+				case adapterState.Name:
+				case adapterState.Avatar:
 				{
-					dbg('Unhandled state: ' + id, data);
-				}*/
+					sendState(id, t, val);
+					return;
+				}
 			}
 
 			// Pass along to app container as well
-			viewManager.cmd(msgStateUpdate, data);
+			//viewManager.cmd(msgStateUpdate, data);
+			sendState(id, t, val);
 
 			// Push lastUpdated info, if any
 			updateLastUpdated(lastUpdate);
 		}
 
+		/**
+		 * Parse unknown data stream items passed up by the GlympseAdapter,
+		 * looking for known EnRoute-based properties to present as state
+		 * to the host app.
+		 * @param {Array} data Array of unknown datastream properties in the format of { n: prop_id, t: timestamp, v: prop_value }
+		 */
 		function parseData(data)
 		{
 			var customData;
@@ -368,6 +428,13 @@ define(function(require, exports, module)
 						break;
 					}
 
+					case s.DriverId:
+					case s.Duration:
+					{
+						sendState(id, t, val);
+						break;
+					}
+
 					default:
 					{
 						if (!customData)
@@ -406,6 +473,10 @@ define(function(require, exports, module)
 		// CALLBACKS
 		///////////////////////////////////////////////////////////////////////////////
 
+		/**
+		 * Initialize the GlympseAdapter to handle Glympse API requests and
+		 * property/state updates
+		 */
 		function adapterInit()
 		{
 			cfgCore.adapter.anon = true;
@@ -416,9 +487,23 @@ define(function(require, exports, module)
 			cfg.adapter = adapter;
 		}
 
+		/**
+		 * Adapter callback made when a host-mode adapter connects to this application
+		 * ---> Currently unused
+		 */
 		function adapterPostInit()
 		{
 			//dbg('POST INIT');
+		}
+
+		/**
+		 * Array map callback used to generate list of valid EnRoute state identifiers
+		 * @param   {String} key Object's key identifier
+		 * @returns {O}      Object value from key reference
+		 */
+		function mapAdapterStateKey(key)
+		{
+			return adapterState[key];
 		}
 
 
@@ -445,6 +530,7 @@ define(function(require, exports, module)
 			cfg.providers = providers;
 		}
 
+		// Link this JourneyCore instance to application
 		viewManager.init(this);
 
 		// Add initial init delay to allow viewport to settle down

@@ -2,7 +2,7 @@ define(function(require, exports, module)
 {
     'use strict';
 
-	module.exports =
+	var Defines =
 	{
 		  strings: { }		// ?? Necessary??
 		, CMD:
@@ -30,6 +30,8 @@ define(function(require, exports, module)
 			, PromiseTime: 'promise'
 			, StoreLocation: 'base_location'
 			, Visibility: 'visibility'
+			, DriverId: 'driver_id'
+			, Duration: 'duration'
 
 			// Supporting data-stream properties (not broadcast)
 			, ApptFrom: 'appt_from'
@@ -61,4 +63,19 @@ define(function(require, exports, module)
 			, noResponse: 999
 		}
 	};
+
+
+	// Global namespace registration
+	if (!window.glympse)
+	{
+		window.glympse = {};
+	}
+
+	if (!window.glympse.JourneyCoreDefines)
+	{
+		window.glympse.JourneyCoreDefines = Defines;
+	}
+
+
+	module.exports = Defines;
 });

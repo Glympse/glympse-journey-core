@@ -33,44 +33,51 @@ The GJC operates on a structured configration, covering:
 
 Below are all of the available settings, as related to the GJC and its sub-components:
 
-	{
-		app: {
-			  dbg: 0|1 -- console.log output
-			, elementViewer: Selector-based target element identifier to place the viewer (i.e. '#glympser')
-			, screenOnly: bool --  Skip animations for fast screenshoting
-			, mapCompletedToFeedbak: bool -- Force feedback phase if completed phase is seen
-			, mapEtaNotLive: bool -- Treat Eta phase as live map phase (necessary in core?)
-			, invite: INVITE_ID -- Glympse-generated invite code to be viewed
-			, provider: {  -- Feedback provider configuration (example shows EnRoute Feedback provider)
-			        id: "enroute"
-				  , appkey: YOUR_APP_KEY
-				  , baseUrl: API_ENDPOINT
-				  , dbg: 0|1
-				  , surveyId: ID_SURVEY
-				  , surveyIdRating: ID_SURVEY_RATING
-				  , surveyIdInfo: [ ID_INFO_0, ..., ID_INFO_N ]
-				  , surveyOptions: [ ID_OPTION_0, ..., ID_OPTION_N ]
-			}
-			, strings: {
-				... App-specific strings, in key: value format ...
-				... KEY0: VALUE0 ...
-				... , KEY1: VALUE1 ...
-				... etc. ...
-			}
-			... additional options passed along to the connected viewing component ...
-		},
-
-		viewer: {
-			... Glympse viewer-specific settings ...
-		},
-
-		adapter: {
-			  hideEvents: false -- do not change (debugging option)
-			, hideUpdates: false -- do not change (debugging option)
-			, svcGlympse: string -- Protocol-less base URL to Glympse API server (default: //api.glympse.com/v2/)
+```json
+{
+	app: {
+		  dbg: 0|1 -- console.log output
+		, elementViewer: Selector-based target element identifier to place the viewer (i.e. '#glympser')
+		, screenOnly: bool --  Skip animations for fast screenshoting
+		, mapCompletedToFeedbak: bool -- Force feedback phase if completed phase is seen
+		, mapEtaNotLive: bool -- Treat Eta phase as live map phase (necessary in core?)
+		, invite: INVITE_ID -- Glympse-generated invite code to be viewed
+		, provider: {  -- Feedback provider configuration (example shows EnRoute Feedback provider)
+				id: "enroute"
+			  , appkey: YOUR_APP_KEY
+			  , baseUrl: API_ENDPOINT
+			  , dbg: 0|1
+			  , surveyId: ID_SURVEY
+			  , surveyIdRating: ID_SURVEY_RATING
+			  , surveyIdInfo: [ ID_INFO_0, ..., ID_INFO_N ]
+			  , surveyOptions: [ ID_OPTION_0, ..., ID_OPTION_N ]
 		}
-	}
+		, phaseStateFilter: { -- State vars to filter until specified phase_id occurs.
+							  -- When phase_id occurs, the latest cached state value is sent
+			state_id0: [ phase_id0, ..., phase_idN ],
+			...
+			state_idN: [ phase_id0, ... ]
+		}
+		, strings: {
+			... App-specific strings, in key: value format ...
+			... KEY0: VALUE0 ...
+			... , KEY1: VALUE1 ...
+			... etc. ...
+		}
+		... additional options passed along to the connected viewing component ...
+	},
 
+	viewer: {
+		... Glympse viewer-specific settings ...
+	},
+
+	adapter: {
+		  hideEvents: false -- do not change (debugging option)
+		, hideUpdates: false -- do not change (debugging option)
+		, svcGlympse: string -- Protocol-less base URL to Glympse API server (default: //api.glympse.com/v2/)
+	}
+}
+```
 
 ##ViewManager setup
 After the GJC component is properly set up and initialized with an EnRoute-based
@@ -137,6 +144,8 @@ object. Details about each type are described below:
 id               |val         |info
 :----------------|:-----------|:------
 **ArrivalRange** |`{ from: epoch, to: epoch }`| Specifies the estimated time of arrival range, optional in the owner's timezone, if specified.
+**DriverId**     |`custom`| String/JSON-formatted data blob with driver information.
+**Duration**     |`duration in ms`| Job duration estimate, in ms
 **FutureTime**   |`ETA format`| `eta` data is time (in epoch format) when arrival is expect.
 **LastUpdate**   |`epoch`| Time sender last actively updated the Glympse invite. 
 **OrderInfo**    |`custom`| String/JSON-formatted data blob with order information.
