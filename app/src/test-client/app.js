@@ -18,23 +18,29 @@ define(function(require, exports, module)
 
 		var cfgAdapter = cfg.adapter || {};
 		var cfgApp = cfg.app || {};
+		var cfgJourney = cfg.journey || {};
 		var cfgViewer = cfg.viewer || {};
 
-		var invites = (cfgAdapter.t && cfgAdapter.t.split(';')) || '';
-		var rawInvites = [];
-		for (var i = 0, len = invites.length; i < len; i++)
-		{
-			rawInvites.push(invites[i].split(',')[0]);
-		}
+		var provider = cfgApp.provider;
 
-		cfgApp.invite = rawInvites.join(';');
+		if (provider)
+		{
+			var invites = (cfgAdapter.t && cfgAdapter.t.split(';')) || [];
+			provider.idInvite = (invites.length > 0) ? invites[0].split(',')[0] : null;
+		}
 
 		// Ensure configs are valid
 		cfg.adapter = cfgAdapter;
 		cfg.app = cfgApp;
+		cfg.journey = cfgJourney;
 		cfg.viewer = cfgViewer;
 
 		vm = new ViewManager(cfgApp);
+		if (cfgApp.defaultPhase)
+		{
+			cfgJourney.defaultPhase = cfgApp.defaultPhase;
+		}
+
 		core = new JourneyCore(vm, cfg);
 	});
 });

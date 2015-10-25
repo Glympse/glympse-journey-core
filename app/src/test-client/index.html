@@ -29,31 +29,24 @@
 		var b = glympse.broadcastTypes;
 		var t = urlParams.t || 'demobot0';
 		var screenOnly = (urlParams.screenOnly != null);
+		var dbg = (urlParams.debug > 0) ? 0 : 1;
 
 		window.cfgApp =
 		{
 			app: {
-
-				// Core/app settings
-				  dbg: (urlParams.debug > 0) ? 0 : 1
+				  dbg: dbg
 				, screenOnly: screenOnly
 				, demo: (t.indexOf('demobot') >= 0)
-				, elementViewer: '#glympser'
-				, mapCompletedToFeedback: true
-				, mapEtaNotLive: true
 				, "provider": {
 					  "id": "enroute"
 					, "appKey": "testappkey"
 					, "baseUrl": "https://api.enterprise.glympse.com/api/v1/feedback/invites/$INVITE/submit"
 					, "dbg": 0
-
 					, "surveyId": 103
 					, "surveyIdRating": 110
 					, "surveyIdInfo": [ 111 ]
 					, "surveyOptions": [ ]
 				}
-
-				// App-specific
 				, ratings: {
 					accumulate: true
 					, numRatings: 5
@@ -69,6 +62,10 @@
 					  sample_text: 'Some Text!!'
 					, alt_text: 'Thank you!'
 				}
+			}
+			, journey: {
+				  dbg: dbg
+				, elementViewer: '#glympser'
 			}
 			, viewer: {
 				  basePath: '//glympse.com/'
@@ -87,7 +84,8 @@
 				, zoomMax: -1
 			}
 			, adapter: {
-				  t: t
+				  dbg: dbg
+				, t: t
 				, pg: (urlParams.pg || null)
 				, dbg: (urlParams.debug > 0) ? 0 : 1
 				, hideEvents: false

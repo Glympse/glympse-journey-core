@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.0   | 2015/10/25 | `journey` config property, remove `app` cfg dependency, change signatures for `ViewerInit` and `InitUi`
 1.4.0   | 2015/10/23 | phaseStateFilter added, various cleanup
 1.3.3   | 2015/10/19 | Ensure default "phase" info is passed first, if not already sent 
 1.3.2   | 2015/10/19 | Force "phase" as initial state property advertised during ViewerReady message

@@ -1,14 +1,15 @@
-#Glympse Journey (Core)
+# Glympse Journey (Core)
 
-##Overview
+## Overview
 The Glympse Journey Core (GJC) component is the Journey engine, handling all
 interaction with the Glympse En Route suite of products. In addition, it handles
 all setup and interaction with the [Glympse Adapter] (GA) component, providing an
 interface to the Glympse Viewer and handling of external iframe-based hosting
 scenarios.
 
-##Structure
-The GJC is to be used as the main controller for any web-based EnRoute viewing 
+
+## Structure
+The GJC is to be used as the main controller for any web-based EnRoute viewing
 experience. It enables interaction with:
 
 - The Glympse Viewer
@@ -19,96 +20,133 @@ experience. It enables interaction with:
 - Cards-based Journey applications (FUTURE)
 
 A high-level flow is shown below:
+
 ![Glympse Adapter Overview](img/overview.png)
 
-It operates on the core premise of EnRoute "phases", which are discrete instances of a
-customer's order journey. Please refer to the Glympse EnRoute programming guide for
-additional information related to the definition of each discrete phase instance.
+It operates on the core premise of EnRoute "phases", which are discrete
+instances of a customer's order journey. Please refer to the Glympse EnRoute
+programming guide for additional information related to the definition of
+each discrete phase instance.
 
-The GJC operates on a structured configration, covering:
 
-- Application settings
-- Glympse viewer configuration
-- Glympse Adapter options
+## Configuration
+When an instance of the GJC is created, the following configuration object
+must be passed to it's constructor, with the following required properties:
 
-Below are all of the available settings, as related to the GJC and its sub-components:
+ property    | description
+:------------|:--------------------------------
+**`adapter`**| [Glympse Adapter] options
+**`app`**    | Application options
+**`journey`**| GJC settings
+**`viewer`** | Glympse viewer configuration
 
-```json
+As a reference, the `cfg` parameter of `new JourneyCore(vm, cfg)` has the
+following structure:
+```
 {
 	app: {
-		  dbg: 0|1 -- console.log output
-		, elementViewer: Selector-based target element identifier to place the viewer (i.e. '#glympser')
-		, screenOnly: bool --  Skip animations for fast screenshoting
-		, mapCompletedToFeedbak: bool -- Force feedback phase if completed phase is seen
-		, mapEtaNotLive: bool -- Treat Eta phase as live map phase (necessary in core?)
-		, invite: INVITE_ID -- Glympse-generated invite code to be viewed
-		, provider: {  -- Feedback provider configuration (example shows EnRoute Feedback provider)
-				id: "enroute"
-			  , appkey: YOUR_APP_KEY
-			  , baseUrl: API_ENDPOINT
-			  , dbg: 0|1
-			  , surveyId: ID_SURVEY
-			  , surveyIdRating: ID_SURVEY_RATING
-			  , surveyIdInfo: [ ID_INFO_0, ..., ID_INFO_N ]
-			  , surveyOptions: [ ID_OPTION_0, ..., ID_OPTION_N ]
-		}
-		, phaseStateFilter: { -- State vars to filter until specified phase_id occurs.
-							  -- When phase_id occurs, the latest cached state value is sent
-			state_id0: [ phase_id0, ..., phase_idN ],
-			...
-			state_idN: [ phase_id0, ... ]
-		}
-		, strings: {
-			... App-specific strings, in key: value format ...
-			... KEY0: VALUE0 ...
-			... , KEY1: VALUE1 ...
-			... etc. ...
-		}
-		... additional options passed along to the connected viewing component ...
+		// various settings
 	},
-
+	journey: {
+		// various settings
+	},
 	viewer: {
-		... Glympse viewer-specific settings ...
+		// various settings
 	},
-
 	adapter: {
-		  hideEvents: false -- do not change (debugging option)
-		, hideUpdates: false -- do not change (debugging option)
-		, svcGlympse: string -- Protocol-less base URL to Glympse API server (default: //api.glympse.com/v2/)
+		// various settings
 	}
 }
 ```
 
-##ViewManager setup
-After the GJC component is properly set up and initialized with an EnRoute-based
-Glympse invite, all of the generated data and information is passed to a connected
-ViewManager object.
 
-The ViewManager object is the main controller for all UI/UX behaviors and flow of
-the Journey experience. It is the consumer of the GJC and is the final "app"
-generated in conjuction with the GJC and all of its subcomponents.
+### `app` config options
+The GJC updates the application-level configuration during it's initialization
+process to provide a couple of helper references. They should be considered
+read-only, and aren't necessary for interaction with most of the functionality
+of the GJC:
+
+
+
+### `journey` config options
+The GJC requires some common core settings to properly support all of its
+components that it provides to hosting applications, as described below:
+
+ property | setting | description
+:---------|:--------|:--------------
+**`dbg`** | _int_ | Set to 0 to enable local debug logging. Any other int value results in no debug output|
+**`defaultPhase`** | _string_ | Default phase to use if no phase information is found in the data stream. If not set, starting Phase will be **Live**.
+**`elementViewer`** | _string_ | Specifies the selector of the HTML DOM element to place the Glympse Viewer map control
+**`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_
+
+
+#### Phase state filter
+The `phaseStateFilter` parameter specifies state vars to present to the
+consuming application when one of their configured phase values occur. It
+should be noted that the value of the state var is not lost -- it is
+cached with the latest value until a phase state update is matched. Once
+this value is sent, the cache for the state var is cleared.
+
+The configuration for `phaseStateFilter` is an object with the following
+key/value pairs:
+
+ property | setting | description
+:---------|:--------|:--------------
+**`state_var_id`**| _Array_of_phase_ids_ | `state_var_id` can be any item found in the `GlympseAdapterDefines.STATE` or `JourneyDefines.STATE` objects. The _Array_of_phase_ids_ is a list of the Phases in which the GJC will broadcast the given state var's current value.
+
+
+### `viewer` config options
+This section of the configuration defines all of the settings to pass in
+to the Glympse Viewer when it is instantiated. Please consult your Glympse
+representative for additional information on available options.
+
+Note that all normal Glympse Viewer query string options are still
+available.
+
+
+### `adapter` config options
+This section defines all of the options to pass in to the [Glympse Adapter]
+when it is instantiated. Please refer to the [Glympse Adapter] documentation
+for available options.
+
+
+### Feedback `provider` configuration
+The `provider` setting specifies the Feedback provider to upload user feedback
+submissions. This configuration is passed from the hosting application during
+provider object initialization (i.e. it is explicitly not part of the `journey`
+config). Below is the current config format to used by GJC's Feedback handler:
+
+ property | setting | description
+:---------|:--------|:--------------
+**`id`** | _string_ | Name of provider to use. Currently, the only supported provider value is `enroute`.
+**`appKey`** | _string_ | Authentication key used to generate submit tokens for given provider.
+**`baseUrl`** | _URL_path_ | URL to feedback upload service. $INVITE tokens are replaced with viewed invite.
+**`dbg`** | _int_ | Debug setting. Set to > 0 to enable console debug output.
+**`surveyId`** | _INT_ | Survey identifier
+**`surveyIdRating`** | _INT_ | Identifier for "rating" status for given survey.
+**`surveyIdInfo`** | _Array_ | Array of additional identifiers to use for a given survey.
+**`surveyOptions`** | _Array_ | Optional array of additional options to include with the survey.
+
+
+## ViewManager setup
+After the GJC component is properly set up and initialized with an EnRoute-based
+Glympse invite, all of the generated data and information is passed to the
+connected ViewManager object.
+
+The ViewManager object is the main controller for all UI/UX behaviors and
+flow of the Journey experience. It is the consumer of the GJC and is the final
+"app" generated in conjuction with the GJC and all of its subcomponents.
 
 To properly interface with the GJC, the ViewManager must implement the following
 public member functions:
 
-- `init(newController)`: Called during invite initialization, with a reference to
-  the GJC instance to be used for app to GJC notifications and requests. Refer
-  below for the exposed GJC APIs.
-- `cmd(cmd, args)`: A notification or command passed from the GJC controller to
-  update the ViewManager-based app with updates to the EnRoute invite. `cmd` is
-  a predefined identifier, defined either in the `glympse-journey-core.Defines.CMD`,
-  or `glympse-adapter.GlympseAdapterDefines.MSG` namespaces. `args`
-  are the support values associated with the passed `cmd` value. [TO-DO: Outline
-  these in more detail]
-- `notify(msg, args)`: Though not required, it is recommended to implement this
-  interface for subcomponents of the app that need to bubble up or request some
-  resource from the ViewManager. This is similar to the top-down `cmd` interface
-  (i.e. from GJC to ViewManager), but with a bottom-up approach (i.e. from sub-
-  components to ViewManager). `msg` values are generally custom/internal
-  identifiers, save for some pre-defined message identifiers used in
-  communicating with the GJC instance, or its subcomponents.
+method  |description
+:-------|:------------
+`init(newController)` | Called during invite initialization, with a reference to the GJC instance to be used for app to GJC notifications and requests. Refer below for the exposed GJC APIs.
+`cmd(cmd, args)` | A notification or command passed from the GJC controller to update the ViewManager-based app with updates to the EnRoute invite. `cmd` is a predefined identifier, defined either in the `glympse-journey-core.Defines.CMD`, or `glympse-adapter.GlympseAdapterDefines.MSG` namespaces. `args` are the support values associated with the passed `cmd` value. [TO-DO: Outline these in more detail]
+`notify(msg, args)` | Though not required, it is recommended to implement this interface for subcomponents of the app that need to bubble up or request some resource from the ViewManager. This is similar to the top-down `cmd` interface (i.e. from GJC to ViewManager), but with a bottom-up approach (i.e. from sub-components to ViewManager). `msg` values are generally custom/internal identifiers, save for some pre-defined message identifiers used in communicating with the GJC instance, or its subcomponents.
 
-##GJC API endpoints
+## GJC API endpoints
 The GJC exposes a single public endpoints to allow for the ViewManager-managed
 app to drive the platform aspects of the Journey experience:
 
@@ -119,19 +157,66 @@ content passed from the ViewManager to the GJC are used to drive various feature
 provided by the GJC (i.e., Feedback, Glympse Adapter endpoints, custom external
 iframe interfaces, etc.)
 
-###Commands
+### Commands
 In addition to all of the commands defined by the GA, the GJC currently only
 exposes one new command, which is defined in the
 `glympse-journey-core/Defines.CMD.*` object:
 
 id        |args       |info
 :---------|:----------|:------
-**InitUi**|_timeStart_|Signals to app that all resources have been loaded and all state is current
+**InitUi**| _object_  |Signals to app that all resources have been loaded and all state is current, passing in additional initialized state. _See **`InitUi` Args** for additional information_.
+**ViewerInit**| _object_ |The GJC modifies the args on this [Glympse Adapter]-generated event. _See **`ViewerInit` Args** for more details_.
 
 In general, when the `InitUi` command is received, the hosting application is
 safe to begin interfacing with the GJC, GA, and the Glympse viewer, as necessary.
 
-###Messages
+#### `InitUi` Args
+The `InitUi` command signals the completion of the initialization of the Glympse
+Adapter and the Glympse Viewer. It's arguments contain additional initialization
+state that can be used by the hosting application, as needed:
+
+ property | description
+:---------|:---------------
+**`t`** | Timestamp of when the active Glympse invite was created.
+**`adapter`** | Reference to the [Glympse Adapter] instance used to load the given Glympse invite and instantiated Glympse Viewer. Please refer to the [Glympse Adapter] documentation on how to interact with this component.
+**`providers`** | An array of all available Feedback provider classes. The items in this array are the constructors to be used to create an instance of a given provider. _Please refer to the **Feedback Provider Setup** section for additional usage information_.
+
+##### Feedback Provider Setup
+The following snippet gives an example of how to locate and instantiate a GJC Feedback
+provider. `InitUi_CMD_args.providers` was passwd byt by the GJC during initialization
+(i.e. this snippet is valid only after the `JourneyDefines.CMD.InitUi` command has been
+received):
+
+```javascript
+// Search through all providers to find correct one
+var providers = InitUi_CMD_args.providers;
+var cfgProvider = App_config.provider;
+for (var i = 0, len = providers.length; i < len; i++)
+{
+	if (providers[i].id === cfgProvider.id)
+	{
+		provider = new providers[i](viewmgr_with_notify_method_ref, cfgProvider);
+		break;
+	}
+}
+
+if (!provider)
+{
+	// ERROR OUT
+}
+```
+
+#### `ViewerInit` Args
+The [Glympse Adapter]-generated `ViewerInit` command has been augmented by the GJC
+to provide additional support during the initialization process:
+
+ property | description
+:---------|:---------------
+**`adapter`** | Reference to the [Glympse Adapter] instance used to load the given Glympse invite and instantiated Glympse Viewer.
+**`args`** | Original args passed by the [Glympse Adapter] for the `ViewerInit` command.
+
+
+### Messages
 Additional `StateUpdate` state types have been introduced to ease the use of the
 Glympse data stream properties added by the Glympse EnRoute system. All of
 these will appear in a `StateUpdate` command for GJC, as shown below:
@@ -147,18 +232,18 @@ id               |val         |info
 **DriverId**     |`custom`| String/JSON-formatted data blob with driver information.
 **Duration**     |`duration in ms`| Job duration estimate, in ms
 **FutureTime**   |`ETA format`| `eta` data is time (in epoch format) when arrival is expect.
-**LastUpdate**   |`epoch`| Time sender last actively updated the Glympse invite. 
+**LastUpdate**   |`epoch`| Time sender last actively updated the Glympse invite.
 **OrderInfo**    |`custom`| String/JSON-formatted data blob with order information.
 **PromiseTime**  |`ETA format`| `eta` data is the amount of time (in milliseconds) of expected arrival.
 **StoreLocation**|`{ lat:.., lng:.., name:.. }`| Position and name of Glympse inviter's origin (i.e. store).
 **Visibility**   |`{ location: 'hidden'/'visible' }`| Specifies if sender is actively sharing location/eta information. If '`hidden`', all state of the Glympse invite is invalidated/hidden.
 
 
-##GJC Feedback component
+## GJC Feedback component
 [TODO: Describe calls/configuration necessary to interact with the Feedback component]
 
 
-##Putting it all together
+## Putting it all together
 To build a stand-alone application that leverages the GJC (and its subcomponents),
 the GJC is pulled in as a bower component (i.e. `bower install glympse-journey-core --save`)
 to a ViewManager-based project. Note that `jquery` is a required component of the
@@ -187,7 +272,7 @@ project GJC-based project. More details can be found at
 [https://github.com/Glympse/generator-glympse-journey-app](https://github.com/Glympse/generator-glympse-journey-app).
 
 
-##Local GJC project setup/build verification
+## Local GJC project setup/build verification
 It is actually quite simple really!
 
 First make sure you have node.js installed... without that nothing works!  You can either install it

@@ -50,7 +50,7 @@ define(function(require, exports, module)
 
 		this.cmd = function(cmd, args)
 		{
-			if (cmd !== adapterMsg.StateUpdate || args.id !== adapterState.Eta || (etaCnt++ % 60) === 0)
+			if (cmd !== c.InitUi && (cmd !== adapterMsg.StateUpdate || args.id !== adapterState.Eta || (etaCnt++ % 60) === 0))
 			{
 				logEvent('cmd: <b>' + cmd + '</b>' + ((args) ? ', args' : ''), args);
 			}
@@ -70,6 +70,7 @@ define(function(require, exports, module)
 
 				case c.InitUi:
 				{
+					logEvent('cmd: <b>InitUi</b>: adapter:' + args.adapter + ', providers: ' + args.providers.length + ', t: ' + args.t);
 					break;
 				}
 

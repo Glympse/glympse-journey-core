@@ -23,24 +23,25 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.4.0)');
+	console.log(_id + ' v(1.5.0)');
 
 
 	/*
 	 * vm: Valid instance of ViewManager interface
 	 * cfgCore [object]: Settings for app, viewer, and adapter
 	 *
-	 * [object]: { app: { ...}, viewer: { ... }, adapter: { ... } }
+	 * [object]: { journey: { ... }, viewer: { ... }, adapter: { ... } }
 	 */
 	function JourneyCore(vm, cfgCore)
 	{
 		// Main config for app setup
-		var cfg = cfgCore.app;
+		var cfg = cfgCore.journey || {};
 
 		// consts
 		var dbg = lib.dbg(_id, cfg.dbg);
 		var msgDataUpdate = adapterMsg.DataUpdate;
 		var msgStateUpdate = adapterMsg.StateUpdate;
+		var cError = '[ERROR]: ';
 
 		// state
 		var that = this;
@@ -152,7 +153,7 @@ define(function(require, exports, module)
 
 					setTimeout(function()
 					{
-						viewManager.cmd(c.InitUi, timeStart);
+						viewManager.cmd(c.InitUi, { t: timeStart, providers: providers, adapter: adapter });
 					}, 400);
 
 					break;
@@ -172,13 +173,17 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case adapterMsg.ViewerInit:
+				{
+					return viewManager.cmd(msg, { adapter: adapter, args: args });
+				}
+
 				// Known but unprocessed in core
 				case adapterMsg.AdapterInit:
 				case adapterMsg.AdapterReady:
 				case adapterMsg.InviteInit:
 				case adapterMsg.InviteReady:
 				case adapterMsg.InviteAdded:
-				case adapterMsg.ViewerInit:
 				{
 					return viewManager.cmd(msg, args);
 				}
@@ -484,7 +489,6 @@ define(function(require, exports, module)
 
 			adapter = new GlympseAdapter(that, cfgCore);
 			adapter.client($(cfg.elementViewer));
-			cfg.adapter = adapter;
 		}
 
 		/**
@@ -512,25 +516,38 @@ define(function(require, exports, module)
 		///////////////////////////////////////////////////////////////////////////////
 
 
-		if (!cfgCore || !cfgCore.app || !cfgCore.viewer || !cfgCore.adapter)
+		if (!cfgCore)
 		{
-			dbg('[ERROR]: Invalid config! Aborting...', cfgCore);
+			console.log(cError + 'Missing config!');
+			return;
+		}
+
+		if (!cfgCore.adapter)
+		{
+			console.log(cError + 'Missing "adapter" config!');
+			return;
+		}
+
+		if (!cfgCore.journey)
+		{
+			console.log(cError + 'Missing "journey" config!');
+			return;
+		}
+
+		if (!cfgCore.viewer)
+		{
+			console.log(cError + 'Missing "viewer" config!');
 			return;
 		}
 
 		if (!viewManager)
 		{
-			dbg('[ERROR]: viewManager not defined! Aborting...');
+			console.log(cError + 'viewManager not defined!');
 			return;
 		}
 
-		// Initialize the viewManager
-		if (!cfg.providers)
-		{
-			cfg.providers = providers;
-		}
-
-		// Link this JourneyCore instance to application
+		// Initialize the viewManager, linking this JourneyCore instance
+		// to the application.
 		viewManager.init(this);
 
 		// Add initial init delay to allow viewport to settle down

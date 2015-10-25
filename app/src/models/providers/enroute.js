@@ -89,9 +89,9 @@ define(function(require, exports, module)
 				items.push({ _id: idInfo[i], value: vals.info[i] });
 			}
 
-			if (vals.options)
+			var idOptions = cfg.surveyOptions;
+			if (idOptions && vals.options)
 			{
-				var idOptions = cfg.surveyOptions;
 				for (i = 0, len = idOptions.length; i < len; i++)
 				{
 					items.push({ _id: idOptions[i], value: vals.options[i] });
