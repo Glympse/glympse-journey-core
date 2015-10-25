@@ -36,15 +36,15 @@ must be passed to it's constructor, with the following required properties:
  property    | description
 :------------|:--------------------------------
 **`adapter`**| [Glympse Adapter] options
-**`app`**    | Application options
-**`journey`**| GJC settings
-**`viewer`** | Glympse viewer configuration
+**`journey`**| _Glympse Journey (Core)_ settings
+**`viewer`** | Glympse Viewer configuration
 
-As a reference, the `cfg` parameter of `new JourneyCore(vm, cfg)` has the
-following structure:
+As a reference, the `cfg` parameter of `new JourneyCore(vm, cfg)` has (at a
+minimum) the following structure. Note that other app-specific properties
+may be present, as they are ignored by the GJC:
 ```
 {
-	app: {
+	adapter: {
 		// various settings
 	},
 	journey: {
@@ -52,20 +52,15 @@ following structure:
 	},
 	viewer: {
 		// various settings
-	},
-	adapter: {
-		// various settings
 	}
 }
 ```
 
 
-### `app` config options
-The GJC updates the application-level configuration during it's initialization
-process to provide a couple of helper references. They should be considered
-read-only, and aren't necessary for interaction with most of the functionality
-of the GJC:
-
+### `adapter` config options
+This section defines all of the options to pass in to the [Glympse Adapter]
+when it is instantiated. Please refer to the [Glympse Adapter] documentation
+for available options.
 
 
 ### `journey` config options
@@ -102,12 +97,6 @@ representative for additional information on available options.
 
 Note that all normal Glympse Viewer query string options are still
 available.
-
-
-### `adapter` config options
-This section defines all of the options to pass in to the [Glympse Adapter]
-when it is instantiated. Please refer to the [Glympse Adapter] documentation
-for available options.
 
 
 ### Feedback `provider` configuration
