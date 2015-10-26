@@ -121,7 +121,7 @@ define(function(require, exports, module)
 				{
 					request.setRequestHeader('Authorization', 'Glympse ' + userToken);
 				},
-				url: urlFeedback.replace('$INVITE', cfg.idInvite),
+				url: urlFeedback.replace('$INVITE', lib.normalizeInvite(cfg.idInvite)),
 				data: JSON.stringify(data),
 				processData: false
 			})
