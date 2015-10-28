@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.3   | 2015/10/28 | Bugfixes / safeguards
 1.5.2   | 2015/10/27 | Added: etaUpdateInterval setting
 1.5.1   | 2015/10/26 | Normalize invite codes for feedback endpoint
 1.5.0   | 2015/10/25 | `journey` config property, remove `app` cfg dependency, change signatures for `ViewerInit` and `InitUi`

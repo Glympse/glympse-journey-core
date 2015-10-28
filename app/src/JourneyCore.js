@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.2)');
+	console.log(_id + ' v(1.5.3)');
 
 
 	/*
@@ -143,7 +143,10 @@ define(function(require, exports, module)
 						prop = oProps[id];
 						if (stateProps.indexOf(id) >= 0)
 						{
-							parseState(generateStateData(id, prop.t, prop.v));
+							if (prop.v !== undefined)
+							{
+								parseState(generateStateData(id, prop.t, prop.v));
+							}
 						}
 						else
 						{
@@ -310,7 +313,7 @@ define(function(require, exports, module)
 		function updateEstimatedEta()
 		{
 			var invite = adapter.map.getInvites()[0];
-			var eta = invite.getEtaEstimate();
+			var eta = invite.getEtaEstimate() * 1000;
 			var t = new Date().getTime();
 
 			sendState(adapterState.Eta, t, { eta: (eta > 0) ? eta : 0, eta_ts: t });
