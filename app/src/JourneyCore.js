@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.1)');
+	console.log(_id + ' v(1.5.2)');
 
 
 	/*
@@ -45,15 +45,18 @@ define(function(require, exports, module)
 
 		// state
 		var that = this;
+
 		var adapter;
 		var currPhase = null;
-		var pushedBase = false;
-		var timeStart = 0;
-		var viewManager = vm;
+		var etaTimeout;
+		var etaUpdateInterval = cfg.etaUpdateInterval || 0;
 		var initialized = false;
 		var lastUpdated = 0;
 		var phaseStateFilter = cfg.phaseStateFilter;
 		var phaseStateQueue = {};
+		var pushedBase = false;
+		var timeStart = 0;
+		var viewManager = vm;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -289,6 +292,31 @@ define(function(require, exports, module)
 				{
 					viewManager.cmd(msgStateUpdate, cfgState);
 				}
+			}
+
+			if (etaTimeout)
+			{
+				clearTimeout(etaTimeout);
+				etaTimeout = 0;
+			}
+
+			// Force an immediate ETA update on Live phase transition
+			if (currPhase.phase === p.Live)
+			{
+				updateEstimatedEta();
+			}
+		}
+
+		function updateEstimatedEta()
+		{
+			var invite = adapter.map.getInvites()[0];
+			var eta = invite.getEtaEstimate();
+			var t = new Date().getTime();
+
+			sendState(adapterState.Eta, t, { eta: (eta > 0) ? eta : 0, eta_ts: t });
+			if (etaUpdateInterval > 0 && currPhase.phase === p.Live)
+			{
+				etaTimeout = setTimeout(updateEstimatedEta, etaUpdateInterval);
 			}
 		}
 

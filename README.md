@@ -72,6 +72,7 @@ components that it provides to hosting applications, as described below:
 **`dbg`** | _int_ | Set to 0 to enable local debug logging. Any other int value results in no debug output|
 **`defaultPhase`** | _string_ | Default phase to use if no phase information is found in the data stream. If not set, starting Phase will be **Live**.
 **`elementViewer`** | _string_ | Specifies the selector of the HTML DOM element to place the Glympse Viewer map control
+**`etaUpdateInterval`** | _int_ | Time interval (in ms) to update estimated ETA in the absense of ETA in the datastream. Set to <= 0 to disable.
 **`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_
 
 
