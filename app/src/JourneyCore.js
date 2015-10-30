@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.3)');
+	console.log(_id + ' v(1.5.4)');
 
 
 	/*
@@ -52,6 +52,7 @@ define(function(require, exports, module)
 		var etaUpdateInterval = cfg.etaUpdateInterval || 0;
 		var initialized = false;
 		var lastUpdated = 0;
+		var phaseMap = cfg.mapPhases || {};
 		var phaseStateFilter = cfg.phaseStateFilter;
 		var phaseStateQueue = {};
 		var pushedBase = false;
@@ -70,7 +71,7 @@ define(function(require, exports, module)
 
 		this.notify = function(msg, args)
 		{
-			//dbg('** NOTIFY ** - ' + msg, args);
+			//dbg('** NOTIFY (' + initialized + ') ** - ' + msg, args);
 			switch (msg)
 			{
 				case msgStateUpdate:
@@ -361,7 +362,7 @@ define(function(require, exports, module)
 
 				case adapterState.Phase:
 				{
-					setCurrentPhase(val, t);
+					setCurrentPhase(phaseMap[val] || val, t);
 					sendCurrentPhase();
 					updateLastUpdated(t);
 					return;
@@ -385,6 +386,20 @@ define(function(require, exports, module)
 				{
 					sendState(id, t, val);
 					return;
+				}
+
+				case adapterState.Expired:
+				{
+					var altPhase = cfg.mapExpiredToPhase;
+
+					if (val && altPhase)
+					{
+						setCurrentPhase(altPhase, t);
+						sendCurrentPhase();
+						return;
+					}
+
+					break;
 				}
 			}
 

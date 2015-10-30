@@ -73,7 +73,27 @@ components that it provides to hosting applications, as described below:
 **`defaultPhase`** | _string_ | Default phase to use if no phase information is found in the data stream. If not set, starting Phase will be **Live**.
 **`elementViewer`** | _string_ | Specifies the selector of the HTML DOM element to place the Glympse Viewer map control
 **`etaUpdateInterval`** | _int_ | Time interval (in ms) to update estimated ETA in the absense of ETA in the datastream. Set to <= 0 to disable.
+**`mapExpiredToPhase`** | _string_ | If set, sends the phase specified by this setting when an `Expired = true` state update occurs (i.e. moves the app to a particular Phase when the monitored Glympse invite expires). If not set, the `Expired` state update will be propogated to the host app for additional processing.
+**`mapPhases`** | _string_ | Maps specified phases to alternate phases then they appear in a Phase update. _For more information, see **Phase Mapping**, below._
 **`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_
+
+
+#### Phase mapping
+Based on the use-case/UX scenario, it is sometimes necessary to map an
+EnRoute phase to another phase. The `mapPhases` setting allows for direct
+mapping when a particular Phase comes through on a Phase state update.
+
+The format of this setting is below:
+```
+{
+	phaseOrig0: mapped_phase0,
+	phaseOrig1: mapped_phase1,
+	phaseOrigN: mapped_phaseN
+}
+```
+Note that this is a forward-mapping operation, and the original phase will
+be lost once mapped. Circular mappings can not be made as the mapping is
+only performed once for a given Phase update.
 
 
 #### Phase state filter
