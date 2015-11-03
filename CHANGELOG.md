@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.5   | 2015/11/02 | Added "Cancelled" phase
 1.5.4   | 2015/10/30 | Support Expired/phase -> alternate phase mapping
 1.5.3   | 2015/10/28 | Bugfixes / safeguards
 1.5.2   | 2015/10/27 | Added: etaUpdateInterval setting

@@ -50,6 +50,7 @@ define(function(require, exports, module)
 			, Completed: 'completed'
 			, NotSet: 'notset'
 			, Aborted: 'not_completed'
+			, Cancelled: 'cancelled'
 		}
 
 		, ResponseCode: {
