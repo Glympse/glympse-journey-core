@@ -76,6 +76,7 @@ components that it provides to hosting applications, as described below:
 **`mapExpiredToPhase`** | _string_ | If set, sends the phase specified by this setting when an `Expired = true` state update occurs (i.e. moves the app to a particular Phase when the monitored Glympse invite expires). If not set, the `Expired` state update will be propogated to the host app for additional processing.
 **`mapPhases`** | _string_ | Maps specified phases to alternate phases then they appear in a Phase update. _For more information, see **Phase Mapping**, below._
 **`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_
+**`snapshotMode`** | _bool_ | Flag to enable _snapshot_ mode, where UI and map displays are synchronized for consistent images generated via Glympse's Snapshot Service. _See the **Snapshot Mode** section, below, for more information._
 
 
 #### Phase mapping
@@ -109,6 +110,11 @@ key/value pairs:
  property | setting | description
 :---------|:--------|:--------------
 **`state_var_id`**| _Array_of_phase_ids_ | `state_var_id` can be any item found in the `GlympseAdapterDefines.STATE` or `JourneyDefines.STATE` objects. The _Array_of_phase_ids_ is a list of the Phases in which the GJC will broadcast the given state var's current value.
+
+#### Snapshot Mode
+When viewing the site through the [Snapshot Service] certain elements are hidden to create a cleaner,
+more clear image of the Glympse. To simulate this mode locally, use the query string parameter
+`screenOnly=1`. While in this mode, the wrapper `div#divApp` has the class `snapshot` for CSS overrides.
 
 
 ### `viewer` config options
@@ -152,7 +158,7 @@ public member functions:
 
 method  |description
 :-------|:------------
-`init(newController)` | Called during invite initialization, with a reference to the GJC instance to be used for app to GJC notifications and requests. Refer below for the exposed GJC APIs.
+`init(newController, snapshotMode)` | Called during invite initialization, with a reference to the GJC instance to be used for app to GJC notifications and requests. `snapshotMode` is the current setting the GJC is using with respect to running in "snapshot" mode. Returns the number of components that need to initialize before it is ready for viewing (used for UI sync during snapshot mode). Refer below for the exposed GJC APIs.
 `cmd(cmd, args)` | A notification or command passed from the GJC controller to update the ViewManager-based app with updates to the EnRoute invite. `cmd` is a predefined identifier, defined either in the `glympse-journey-core.Defines.CMD`, or `glympse-adapter.GlympseAdapterDefines.MSG` namespaces. `args` are the support values associated with the passed `cmd` value. [TO-DO: Outline these in more detail]
 `notify(msg, args)` | Though not required, it is recommended to implement this interface for subcomponents of the app that need to bubble up or request some resource from the ViewManager. This is similar to the top-down `cmd` interface (i.e. from GJC to ViewManager), but with a bottom-up approach (i.e. from sub-components to ViewManager). `msg` values are generally custom/internal identifiers, save for some pre-defined message identifiers used in communicating with the GJC instance, or its subcomponents.
 
@@ -227,6 +233,20 @@ to provide additional support during the initialization process:
 
 
 ### Messages
+Several new Messages have been introduced by the GJC to help with common flow/update
+scenarios. These can be referenced via the `glympse-journey-core/Defines.MSG`
+object:
+
+ message | description
+:--------|:---------------
+**`TokenUpdate`** | Message sent from feedback provider to a UI component with respect to Feedback auth token retreival
+**`FeedbackSubmitted`** | Message sent from feedback provider to a UI component with respect to Feedback submission status
+**`ForcePhase`** | Used by ViewController/app for forced view updates (i.e. demos)
+**`ForceAbort`** | Used by ViewController/app for forced view updates (i.e. demos)
+**`ComponentLoaded`** | Message sent by the ViewController/app to the GJC instance's notify() method, and used during snapshot mode to ensure UI sync
+
+
+### States
 Additional `StateUpdate` state types have been introduced to ease the use of the
 Glympse data stream properties added by the Glympse EnRoute system. All of
 these will appear in a `StateUpdate` command for GJC, as shown below:

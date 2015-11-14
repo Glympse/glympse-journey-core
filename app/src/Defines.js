@@ -18,6 +18,7 @@ define(function(require, exports, module)
 			, FeedbackSubmitted: 'FeedbackSubmitted'	// From feedback provider to UI component
 			, ForcePhase: 'ForcePhase'					// Used by ViewController/app for forced view updates (i.e. demos)
 			, ForceAbort: 'ForceAbort'
+			, ComponentLoaded: 'ComponentLoaded'		// Used by snapshot mode to ensure UI sync
 		}
 
 		, STATE:
