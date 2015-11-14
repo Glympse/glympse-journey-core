@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.6)');
+	console.log(_id + ' v(1.5.7)');
 
 
 	/*
@@ -571,11 +571,11 @@ define(function(require, exports, module)
 				return;
 			}
 
-			var map = adapter.map.getMap();
+/*			var map = adapter.map.getMap();
 
 			map.getEngine().removeEventListener('render', mapTilesLoaded);
 			map.removeEventListener('mapviewchangeend', changeEnd);
-
+*/
 			console.log('JOURNEY_READY');
 
 			// Force off
@@ -619,7 +619,7 @@ define(function(require, exports, module)
 			return adapterState[key];
 		}
 
-		function mapTilesLoaded(e)
+/*		function mapTilesLoaded(e)
 		{
 			//dbg('loaded: ' + initLoadedTiles + ', changes=' + initChanges);
 			initLoadedTiles++;
@@ -632,7 +632,7 @@ define(function(require, exports, module)
 			initChanges++;
 			finalizeSnapshot();
 		}
-
+*/
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CTOR
