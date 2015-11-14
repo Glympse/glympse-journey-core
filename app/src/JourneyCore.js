@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.5)');
+	console.log(_id + ' v(1.5.6)');
 
 
 	/*
@@ -42,6 +42,9 @@ define(function(require, exports, module)
 		var msgDataUpdate = adapterMsg.DataUpdate;
 		var msgStateUpdate = adapterMsg.StateUpdate;
 		var cError = '[ERROR]: ';
+		var cNumEngineUpdates = 3;
+		var cNumMapUpdates = 1;
+		var cNumComponentsToSync = 1;
 
 		// state
 		var that = this;
@@ -51,11 +54,15 @@ define(function(require, exports, module)
 		var etaTimeout;
 		var etaUpdateInterval = cfg.etaUpdateInterval || 0;
 		var initialized = false;
+		var initChanges = 0;
+		var initLoadedTiles = 0;
+		var initSyncedComponents = 0;
 		var lastUpdated = 0;
 		var phaseMap = cfg.mapPhases || {};
 		var phaseStateFilter = cfg.phaseStateFilter;
 		var phaseStateQueue = {};
 		var pushedBase = false;
+		var isSnapshot = false;
 		var timeStart = 0;
 		var viewManager = vm;
 
@@ -158,9 +165,32 @@ define(function(require, exports, module)
 					// Handle Journey/custom properties
 					parseData(props, true);
 
+/*					if (isSnapshot)
+					{
+						// Wrap engine and map control
+						var map = adapter.map.getMap();
+						map.getEngine().addEventListener('render', mapTilesLoaded);
+						map.addEventListener('mapviewchangeend', changeEnd);
+
+						// Time-out semantics
+						setTimeout(function()
+						{
+							if (initSyncedComponents >= 0)
+							{
+								initChanges = cNumMapUpdates;
+								initLoadedTiles = cNumEngineUpdates;
+								initSyncedComponents = cNumComponentsToSync;
+								finalizeSnapshot();
+							}
+						}, 6077);
+					}
+*/
 					setTimeout(function()
 					{
-						viewManager.cmd(c.InitUi, { t: timeStart, providers: providers, adapter: adapter });
+						initSyncedComponents += viewManager.cmd(c.InitUi, { t: timeStart, providers: providers, adapter: adapter }) || 0;
+						initChanges = cNumMapUpdates;
+						initLoadedTiles = cNumEngineUpdates;
+						finalizeSnapshot();
 					}, 400);
 
 					break;
@@ -177,6 +207,19 @@ define(function(require, exports, module)
 				{
 					setCurrentPhase(p.Aborted, new Date().getTime());
 					sendCurrentPhase();
+					break;
+				}
+
+				case m.ComponentLoaded:
+				{
+					if (initSyncedComponents >= 0)
+					{
+						initSyncedComponents++;
+						if (isSnapshot)
+						{
+							finalizeSnapshot();
+						}
+					}
 					break;
 				}
 
@@ -248,10 +291,8 @@ define(function(require, exports, module)
 
 				if (filter && filter.length > 0 && id !== adapterState.Phase)
 				{
-					//dbg('id: ' + id + ', filter: ', filter);
 					if (filter.indexOf(currPhase.phase) < 0)
 					{
-						//dbg('!!!!!!!Filtered "' + id + '"', cfgState);
 						phaseStateQueue[id] = cfgState;
 						return true;
 					}
@@ -519,6 +560,28 @@ define(function(require, exports, module)
 			}
 		}
 
+		function finalizeSnapshot()
+		{
+			if (!isSnapshot
+			 || initChanges < cNumMapUpdates
+			 || initLoadedTiles < cNumEngineUpdates
+			 || initSyncedComponents < cNumComponentsToSync
+			   )
+			{
+				return;
+			}
+
+			var map = adapter.map.getMap();
+
+			map.getEngine().removeEventListener('render', mapTilesLoaded);
+			map.removeEventListener('mapviewchangeend', changeEnd);
+
+			console.log('JOURNEY_READY');
+
+			// Force off
+			initSyncedComponents = -1;
+		}
+
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CALLBACKS
@@ -554,6 +617,20 @@ define(function(require, exports, module)
 		function mapAdapterStateKey(key)
 		{
 			return adapterState[key];
+		}
+
+		function mapTilesLoaded(e)
+		{
+			//dbg('loaded: ' + initLoadedTiles + ', changes=' + initChanges);
+			initLoadedTiles++;
+			finalizeSnapshot();
+		}
+
+		function changeEnd(e)
+		{
+			//console.log('!!');
+			initChanges++;
+			finalizeSnapshot();
 		}
 
 
@@ -592,9 +669,18 @@ define(function(require, exports, module)
 			return;
 		}
 
+		// Set up for snapshot mode
+		if (cfg.snapshotMode)
+		{
+			isSnapshot = true;
+			cfgCore.viewer.screenOnly = true;
+			console.log('SNAPSHOT_FINALIZE:JOURNEY_READY');
+		}
+
 		// Initialize the viewManager, linking this JourneyCore instance
-		// to the application.
-		viewManager.init(this);
+		// to the application, and getting the number of components to
+		// sync for snapshot purposes
+		cNumComponentsToSync = viewManager.init(this, isSnapshot) || 0;
 
 		// Add initial init delay to allow viewport to settle down
 		setTimeout(adapterInit, 100);
