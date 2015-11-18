@@ -81,15 +81,16 @@ define(function(require, exports, module)
 
 		function sendFeedback(vals)
 		{
-			var items = [{ _id: cfg.surveyIdRating, value: vals.rating }];
-			var idInfo = cfg.surveyIdInfo;
 			var i, len;
+			var items = [];
+			var idInfo = cfg.surveyIdInfo;
+			var idOptions = cfg.surveyOptions;
+
 			for (i = 0, len = idInfo.length; i < len; i++)
 			{
 				items.push({ _id: idInfo[i], value: vals.info[i] });
 			}
 
-			var idOptions = cfg.surveyOptions;
 			if (idOptions && vals.options)
 			{
 				for (i = 0, len = idOptions.length; i < len; i++)
@@ -108,11 +109,12 @@ define(function(require, exports, module)
 				}
 			}
 
-			var data = {
-				  'survey_id': cfg.surveyId
-				, 'uid': userToken
-				, 'items': items
-			};
+			var data = { survey_id: cfg.surveyId
+					   , uid: userToken
+					   , rating: vals.rating
+					   , comment: vals.comments
+					   , items: items
+					   };
 
 			$.ajax(
 			{

@@ -139,7 +139,6 @@ config). Below is the current config format to used by GJC's Feedback handler:
 **`baseUrl`** | _URL_path_ | URL to feedback upload service. $INVITE tokens are replaced with viewed invite.
 **`dbg`** | _int_ | Debug setting. Set to > 0 to enable console debug output.
 **`surveyId`** | _INT_ | Survey identifier
-**`surveyIdRating`** | _INT_ | Identifier for "rating" status for given survey.
 **`surveyIdInfo`** | _Array_ | Array of additional identifiers to use for a given survey.
 **`surveyOptions`** | _Array_ | Optional array of additional options to include with the survey.
 
