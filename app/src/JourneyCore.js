@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.8)');
+	console.log(_id + ' v(1.5.9)');
 
 
 	/*
@@ -41,28 +41,27 @@ define(function(require, exports, module)
 		var dbg = lib.dbg(_id, cfg.dbg);
 		var msgDataUpdate = adapterMsg.DataUpdate;
 		var msgStateUpdate = adapterMsg.StateUpdate;
+
 		var cError = '[ERROR]: ';
-		var cNumEngineUpdates = 3;
-		var cNumMapUpdates = 1;
-		var cNumComponentsToSync = 1;
+		var cUndefined;
 
 		// state
 		var that = this;
 
 		var adapter;
+		var currEta = cUndefined;
 		var currPhase = null;
 		var etaTimeout;
 		var etaUpdateInterval = cfg.etaUpdateInterval || 0;
 		var initialized = false;
-		var initChanges = 0;
-		var initLoadedTiles = 0;
-		var initSyncedComponents = 0;
+		var isSnapshot = false;
 		var lastUpdated = 0;
+		var numComponentsToSync = 1;
+		var numSyncedComponents = 0;
 		var phaseMap = cfg.mapPhases || {};
 		var phaseStateFilter = cfg.phaseStateFilter;
 		var phaseStateQueue = {};
 		var pushedBase = false;
-		var isSnapshot = false;
 		var timeStart = 0;
 		var viewManager = vm;
 
@@ -165,31 +164,9 @@ define(function(require, exports, module)
 					// Handle Journey/custom properties
 					parseData(props, true);
 
-/*					if (isSnapshot)
-					{
-						// Wrap engine and map control
-						var map = adapter.map.getMap();
-						map.getEngine().addEventListener('render', mapTilesLoaded);
-						map.addEventListener('mapviewchangeend', changeEnd);
-
-						// Time-out semantics
-						setTimeout(function()
-						{
-							if (initSyncedComponents >= 0)
-							{
-								initChanges = cNumMapUpdates;
-								initLoadedTiles = cNumEngineUpdates;
-								initSyncedComponents = cNumComponentsToSync;
-								finalizeSnapshot();
-							}
-						}, 6077);
-					}
-*/
 					setTimeout(function()
 					{
-						initSyncedComponents += viewManager.cmd(c.InitUi, { t: timeStart, providers: providers, adapter: adapter }) || 0;
-						initChanges = cNumMapUpdates;
-						initLoadedTiles = cNumEngineUpdates;
+						numSyncedComponents += viewManager.cmd(c.InitUi, { t: timeStart, providers: providers, adapter: adapter }) || 0;
 						finalizeSnapshot();
 					}, 400);
 
@@ -212,14 +189,12 @@ define(function(require, exports, module)
 
 				case m.ComponentLoaded:
 				{
-					if (initSyncedComponents >= 0)
+					if (numSyncedComponents >= 0)
 					{
-						initSyncedComponents++;
-						if (isSnapshot)
-						{
-							finalizeSnapshot();
-						}
+						numSyncedComponents++;
+						finalizeSnapshot();
 					}
+
 					break;
 				}
 
@@ -339,31 +314,40 @@ define(function(require, exports, module)
 				}
 			}
 
+			// Send an immediate ETA update on phase update, as necessary
+			updateEstimatedEta();
+		}
+
+		function updateEstimatedEta()
+		{
 			if (etaTimeout)
 			{
 				clearTimeout(etaTimeout);
 				etaTimeout = 0;
 			}
 
-			// Force an immediate ETA update on Live phase transition
-			if (currPhase.phase === p.Live)
+			// Don't estimate if we haven't yet received an ETA
+			if (!currEta || currEta.eta === cUndefined || currEta.eta === null)
 			{
-				updateEstimatedEta();
+				return;
 			}
-		}
 
-		function updateEstimatedEta()
-		{
 			var invite = adapter.map.getInvites()[0];
 			var eta = invite.getEtaEstimate() * 1000;
 			var t = new Date().getTime();
 
-			sendState(adapterState.Eta, t, { eta: (eta > 0) ? eta : 0, eta_ts: t });
-			if (etaUpdateInterval > 0 && currPhase.phase === p.Live)
+			if (!isNaN(eta))
+			{
+				// Only send valid ETAs from the viewer
+				sendState(adapterState.Eta, t, { eta: (eta > 0) ? eta : 0, eta_ts: t });
+			}
+
+			if (etaUpdateInterval > 0)
 			{
 				etaTimeout = setTimeout(updateEstimatedEta, etaUpdateInterval);
 			}
 		}
+
 
 		function updateLastUpdated(t)
 		{
@@ -388,9 +372,9 @@ define(function(require, exports, module)
 			{
 				case adapterState.Eta:
 				{
-					// Parse "special" eta info
 					if (val)
 					{
+						// Parse "special" eta info
 						if (val.type === s.PromiseTime || val.type === s.FutureTime)
 						{
 							sendState(val.type, t, val);
@@ -398,7 +382,9 @@ define(function(require, exports, module)
 						}
 					}
 
-					break;
+					currEta = val;
+					updateEstimatedEta();
+					return;
 				}
 
 				case adapterState.Phase:
@@ -445,7 +431,6 @@ define(function(require, exports, module)
 			}
 
 			// Pass along to app container as well
-			//viewManager.cmd(msgStateUpdate, data);
 			sendState(id, t, val);
 
 			// Push lastUpdated info, if any
@@ -562,24 +547,15 @@ define(function(require, exports, module)
 
 		function finalizeSnapshot()
 		{
-			if (!isSnapshot
-			 || initChanges < cNumMapUpdates
-			 || initLoadedTiles < cNumEngineUpdates
-			 || initSyncedComponents < cNumComponentsToSync
-			   )
+			if (!isSnapshot || numSyncedComponents < numComponentsToSync)
 			{
 				return;
 			}
 
-/*			var map = adapter.map.getMap();
-
-			map.getEngine().removeEventListener('render', mapTilesLoaded);
-			map.removeEventListener('mapviewchangeend', changeEnd);
-*/
 			console.log('JOURNEY_READY');
 
 			// Force off
-			initSyncedComponents = -1;
+			numSyncedComponents = -1;
 		}
 
 
@@ -619,20 +595,6 @@ define(function(require, exports, module)
 			return adapterState[key];
 		}
 
-/*		function mapTilesLoaded(e)
-		{
-			//dbg('loaded: ' + initLoadedTiles + ', changes=' + initChanges);
-			initLoadedTiles++;
-			finalizeSnapshot();
-		}
-
-		function changeEnd(e)
-		{
-			//console.log('!!');
-			initChanges++;
-			finalizeSnapshot();
-		}
-*/
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CTOR
@@ -680,7 +642,7 @@ define(function(require, exports, module)
 		// Initialize the viewManager, linking this JourneyCore instance
 		// to the application, and getting the number of components to
 		// sync for snapshot purposes
-		cNumComponentsToSync = viewManager.init(this, isSnapshot) || 0;
+		numComponentsToSync = viewManager.init(this, isSnapshot) || 0;
 
 		// Add initial init delay to allow viewport to settle down
 		setTimeout(adapterInit, 100);
