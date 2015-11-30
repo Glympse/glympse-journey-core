@@ -2,7 +2,8 @@
 
 version |date        |notes
 :-------|:-----------|:------
-1.5.8   | 2015/11/17 | New commnet/rating fields for feedback submission
+1.5.9   | 2015/11/30 | Clean up ETA updates from viewer, some code refactor/cleanup
+1.5.8   | 2015/11/17 | New comment/rating fields for feedback submission
 1.5.7   | 2015/11/14 | Code cleanup
 1.5.6   | 2015/11/13 | Added snapshotMode support, additional README.md updates
 1.5.5   | 2015/11/02 | Added "Cancelled" phase
