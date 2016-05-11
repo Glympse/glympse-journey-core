@@ -113,8 +113,12 @@ define(function(require, exports, module)
 					   , uid: userToken
 					   , rating: vals.rating
 					   , comment: vals.comments
-					   , items: items
 					   };
+
+			if (items.length > 0)
+			{
+				data.items = items;
+			}
 
 			$.ajax(
 			{
