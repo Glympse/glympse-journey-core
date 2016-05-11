@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.11  | 2016/05/11 | Versions sync
 1.5.10  | 2016/05/11 | Don't include feedback items if no items to report
 1.5.9   | 2015/11/30 | Clean up ETA updates from viewer, some code refactor/cleanup
 1.5.8   | 2015/11/17 | New comment/rating fields for feedback submission
