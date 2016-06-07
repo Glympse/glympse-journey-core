@@ -173,9 +173,8 @@ provided by the GJC (i.e., Feedback, Glympse Adapter endpoints, custom external
 iframe interfaces, etc.)
 
 ### Commands
-In addition to all of the commands defined by the GA, the GJC currently only
-exposes one new command, which is defined in the
-`glympse-journey-core/Defines.CMD.*` object:
+In addition to all of the commands defined by the GA, the GJC supports a couple of
+new commands, as defined in the `glympse-journey-core/Defines.CMD.*` object:
 
 id        |args       |info
 :---------|:----------|:------
@@ -239,6 +238,7 @@ object:
  message | description
 :--------|:---------------
 **`TokenUpdate`** | Message sent from feedback provider to a UI component with respect to Feedback auth token retreival
+**`EventSubmitted`** | Message sent from feedback provider to a UI component with respect to Event submission status
 **`FeedbackSubmitted`** | Message sent from feedback provider to a UI component with respect to Feedback submission status
 **`ForcePhase`** | Used by ViewController/app for forced view updates (i.e. demos)
 **`ForceAbort`** | Used by ViewController/app for forced view updates (i.e. demos)
@@ -269,7 +269,13 @@ id               |val         |info
 
 
 ## GJC Feedback component
-[TODO: Describe calls/configuration necessary to interact with the Feedback component]
+The Feedback component supports several commands, as specified via it's `cmd` interface
+(and specified in the `glympse-journey-core/Defines.CMD.*` object):
+id                 |args                  |info
+:------------------|:---------------------|:------
+**`UpdateAuth`**   |none                  |Forces feedback provider to update it's auth token
+**`SendEvent`**    |`string`              |String identifer to log on the current invite code
+**`SendFeedback`** |`{ Feedback format }` |Feedback to submit
 
 
 ## Putting it all together

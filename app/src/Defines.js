@@ -8,6 +8,7 @@ define(function(require, exports, module)
 		, CMD:
 		{
 			  InitUi: 'InitUi'
+			, SendEvent: 'SendEvent'			// From UI to provider
 			, SendFeedback: 'SendFeedback'		// From UI to provider
 			, UpdateAuth: 'UpdateAuth'
 		}
@@ -15,6 +16,7 @@ define(function(require, exports, module)
 		, MSG:
 		{
 			  TokenUpdate: 'TokenUpdate'				// From feedback provider to UI component
+			, EventSubmitted: 'EventSubmitted'			// From feedback provider to UI component
 			, FeedbackSubmitted: 'FeedbackSubmitted'	// From feedback provider to UI component
 			, ForcePhase: 'ForcePhase'					// Used by ViewController/app for forced view updates (i.e. demos)
 			, ForceAbort: 'ForceAbort'

@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.12  | 2016/06/07 | Support events API (drop old feedback API)
 1.5.11  | 2016/05/11 | Versions sync
 1.5.10  | 2016/05/11 | Don't include feedback items if no items to report
 1.5.9   | 2015/11/30 | Clean up ETA updates from viewer, some code refactor/cleanup

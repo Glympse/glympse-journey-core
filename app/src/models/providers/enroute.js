@@ -40,6 +40,13 @@ define(function(require, exports, module)
 					break;
 				}
 
+				case c.SendEvent:
+				{
+					//dbg('SEND EVENT', args);
+					sendEvent(args);
+					break;
+				}
+
 				case c.SendFeedback:
 				{
 					//dbg('SEND FEEDBACK', args);
@@ -79,6 +86,12 @@ define(function(require, exports, module)
 			//console.log('Got userToken: ' + userToken);
 		}
 
+		function sendEvent(id)
+		{
+			updateToken();
+			postEventMessage('action', { action: id }, m.EventSubmitted);
+		}
+
 		function sendFeedback(vals)
 		{
 			var i, len;
@@ -99,15 +112,7 @@ define(function(require, exports, module)
 				}
 			}
 
-			// Handle update change in user token, as necessary
-			if (!userToken)
-			{
-				updateAuth();
-				if (!userToken)
-				{
-					userToken = null;
-				}
-			}
+			updateToken();
 
 			var data = { survey_id: cfg.surveyId
 					   , uid: userToken
@@ -120,6 +125,24 @@ define(function(require, exports, module)
 				data.items = items;
 			}
 
+			postEventMessage('feedback', data, m.FeedbackSubmitted);
+		}
+
+		function updateToken()
+		{
+			// Handle update change in user token, as necessary
+			if (!userToken)
+			{
+				updateAuth();
+				if (!userToken)
+				{
+					userToken = null;
+				}
+			}
+		}
+
+		function postEventMessage(eventType, data, msg)
+		{
 			$.ajax(
 			{
 				type: 'POST',
@@ -128,16 +151,16 @@ define(function(require, exports, module)
 					request.setRequestHeader('Authorization', 'Glympse ' + userToken);
 				},
 				url: urlFeedback.replace('$INVITE', lib.normalizeInvite(cfg.idInvite)),
-				data: JSON.stringify(data),
+				data: JSON.stringify({ type: eventType, data: data }),
 				processData: false
 			})
 			.done(function(data)
 			{
-				processFeedbackSubmission(data);
+				processFeedbackSubmission(data, msg);
 			})
 			.fail(function(xOptions, status)
 			{
-				controller.notify(m.FeedbackSubmitted
+				controller.notify(msg
 								, new AppResponse({ code: rc.errorLoading
 												  , info: 'Error loading: ' + urlFeedback })
 								 );
@@ -149,7 +172,7 @@ define(function(require, exports, module)
 		// CALLBACKS
 		///////////////////////////////////////////////////////////////////////////////
 
-		function processFeedbackSubmission(data)
+		function processFeedbackSubmission(data, msg)
 		{
 			var response = new AppResponse({ loaded: true });
 
@@ -171,7 +194,7 @@ define(function(require, exports, module)
 				}
 			}
 
-			controller.notify(m.FeedbackSubmitted, response);
+			controller.notify(msg, response);
 		}
 	}
 
