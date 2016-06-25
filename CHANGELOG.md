@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.14  | 2016/06/24 | Don't allow expired phase map when phase is already `completed` or `cancelled`
 1.5.13  | 2016/06/07 | Versions sync
 1.5.12  | 2016/06/07 | Support events API (drop old feedback API)
 1.5.11  | 2016/05/11 | Versions sync
@@ -9,8 +10,8 @@ version |date        |notes
 1.5.9   | 2015/11/30 | Clean up ETA updates from viewer, some code refactor/cleanup
 1.5.8   | 2015/11/17 | New comment/rating fields for feedback submission
 1.5.7   | 2015/11/14 | Code cleanup
-1.5.6   | 2015/11/13 | Added snapshotMode support, additional README.md updates
-1.5.5   | 2015/11/02 | Added "Cancelled" phase
+1.5.6   | 2015/11/13 | Added snapshotMode support, additional `README.md` updates
+1.5.5   | 2015/11/02 | Added `Cancelled` phase
 1.5.4   | 2015/10/30 | Support Expired/phase -> alternate phase mapping
 1.5.3   | 2015/10/28 | Bugfixes / safeguards
 1.5.2   | 2015/10/27 | Added: etaUpdateInterval setting
