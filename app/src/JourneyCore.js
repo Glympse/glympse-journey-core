@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.13)');
+	console.log(_id + ' v(1.5.14)');
 
 
 	/*
@@ -418,8 +418,9 @@ define(function(require, exports, module)
 				case adapterState.Expired:
 				{
 					var altPhase = cfg.mapExpiredToPhase;
+					var cPhase = currPhase.phase;
 
-					if (val && altPhase)
+					if (val && altPhase && (cPhase !== p.Cancelled) && (cPhase !== p.Completed))
 					{
 						setCurrentPhase(altPhase, t);
 						sendCurrentPhase();
