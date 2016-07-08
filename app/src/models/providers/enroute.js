@@ -99,9 +99,12 @@ define(function(require, exports, module)
 			var idInfo = cfg.surveyIdInfo;
 			var idOptions = cfg.surveyOptions;
 
-			for (i = 0, len = idInfo.length; i < len; i++)
+			if (idInfo && vals.info)
 			{
-				items.push({ _id: idInfo[i], value: vals.info[i] });
+				for (i = 0, len = idInfo.length; i < len; i++)
+				{
+					items.push({ _id: idInfo[i], value: vals.info[i] });
+				}
 			}
 
 			if (idOptions && vals.options)

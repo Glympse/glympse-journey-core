@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.15  | 2016/07/07 | Better handling of null feedback optional fields
 1.5.14  | 2016/06/24 | Don't allow expired phase map when phase is already `completed` or `cancelled`
 1.5.13  | 2016/06/07 | Versions sync
 1.5.12  | 2016/06/07 | Support events API (drop old feedback API)
