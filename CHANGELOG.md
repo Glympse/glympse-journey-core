@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.16  | 2016/07/23 | Sync to `glympse-adapter` v(1.3.10) (be sure to `bower install` to get the latest). Small docs update.
 1.5.15  | 2016/07/07 | Better handling of null feedback optional fields
 1.5.14  | 2016/06/24 | Don't allow expired phase map when phase is already `completed` or `cancelled`
 1.5.13  | 2016/06/07 | Versions sync

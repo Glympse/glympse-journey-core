@@ -162,7 +162,7 @@ method  |description
 `notify(msg, args)` | Though not required, it is recommended to implement this interface for subcomponents of the app that need to bubble up or request some resource from the ViewManager. This is similar to the top-down `cmd` interface (i.e. from GJC to ViewManager), but with a bottom-up approach (i.e. from sub-components to ViewManager). `msg` values are generally custom/internal identifiers, save for some pre-defined message identifiers used in communicating with the GJC instance, or its subcomponents.
 
 ## GJC API endpoints
-The GJC exposes a single public endpoints to allow for the ViewManager-managed
+The GJC exposes a single public endpoint to allow for the ViewManager-managed
 app to drive the platform aspects of the Journey experience:
 
     GJCinstance.notify(msg, args);
@@ -179,10 +179,14 @@ new commands, as defined in the `glympse-journey-core/Defines.CMD.*` object:
 id        |args       |info
 :---------|:----------|:------
 **InitUi**| _object_  |Signals to app that all resources have been loaded and all state is current, passing in additional initialized state. _See **`InitUi` Args** for additional information_.
-**ViewerInit**| _object_ |The GJC modifies the args on this [Glympse Adapter]-generated event. _See **`ViewerInit` Args** for more details_.
+**ViewerInit**| _object_ |The GJC modifies the args on this [Glympse Adapter]-generated event before it is passed along to the connected ViewManager class instance. _See **`ViewerInit` Args** for more details_.
 
 In general, when the `InitUi` command is received, the hosting application is
 safe to begin interfacing with the GJC, GA, and the Glympse viewer, as necessary.
+
+It should be noted that the ViewManager instance should not send
+command args to the GJC. It should only communicate with the GJC
+via the `notify(msg, args)` interface, as described above.
 
 #### `InitUi` Args
 The `InitUi` command signals the completion of the initialization of the Glympse
@@ -233,7 +237,8 @@ to provide additional support during the initialization process:
 ### Messages
 Several new Messages have been introduced by the GJC to help with common flow/update
 scenarios. These can be referenced via the `glympse-journey-core/Defines.MSG`
-object:
+object and passed by the ViewManager instance to the GJC via the `notify(msg, args)`
+interface, for the notifications described below:
 
  message | description
 :--------|:---------------
