@@ -4,6 +4,9 @@
 
 define(function(require, exports, module)
 {
+	var cJourneyState = '_gjstate';
+	var lib = require('glympse-adapter/lib/utils');
+
 	// Simple lib export
 	var utils =
 	{
@@ -114,6 +117,23 @@ define(function(require, exports, module)
 			{
 				c.on('tap-failed', callbackCancel);
 				c.on('exceed-tap-threshold', callbackCancel);
+			}
+		}
+		, getState: function(invite) {
+			return lib.getCfgVal(invite, cJourneyState);
+		}
+		, getStateVal: function(invite, id) {
+			var state = utils.getState(invite);
+			return (state && state[id]);
+		}
+		, setStateVal: function(invite, id, val, daysToSave) {
+			var state = utils.getState(invite) || {};
+			state[id] = val;
+			try {
+				lib.setCfgVal(invite, state, cJourneyState, daysToSave || 3);
+			}
+			catch (e) {
+				console.log('Unable to save setting "' + id + '" on "' + invite + '" -- ' + e);
 			}
 		}
 	};
