@@ -139,7 +139,7 @@ define(function(require, exports, module)
 				updateAuth();
 				if (!userToken)
 				{
-					userToken = null;
+					userToken = undefined;
 				}
 			}
 		}
