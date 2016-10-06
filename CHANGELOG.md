@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.5.19  | 2016/10/06 | Delay sending "live" phase update if no location for up to 20 seconds (temp hack)
 1.5.18  | 2016/07/26 | Set Feedback's userToken to undefined if no access_token (fixes upload feedback issue)
 1.5.17  | 2016/07/24 | Added `getState`, `getStateVal`, `setStateVal` to common.utils
 1.5.16  | 2016/07/23 | Sync to `glympse-adapter` v(1.3.10) (be sure to `bower install` to get the latest). Small docs update.

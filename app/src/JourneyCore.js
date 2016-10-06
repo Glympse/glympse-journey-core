@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.18)');
+	console.log(_id + ' v(1.5.19)');
 
 
 	/*
@@ -300,8 +300,25 @@ define(function(require, exports, module)
 		 * Broadcast updated Phase state, and send along any filtered phase-based
 		 * states, as necessary.
 		 */
+		var checkDelayedLocRemaining = 20;
+		var checkDelayedLocPeriod = 1000;
 		function sendCurrentPhase()
 		{
+			if (currPhase.phase === p.Live && checkDelayedLocRemaining--)
+			{
+				var loc = adapter.map.getInvites()[0].getInvite().location;
+				console.log('******** Checking for location!! --> ', loc);
+				if (!loc)
+				{
+					console.log('******** NO LOC... retrying in ' + checkDelayedLocPeriod + 'ms (tries left=' + checkDelayedLocRemaining + ')');
+					setTimeout(sendCurrentPhase, checkDelayedLocPeriod);
+					return;
+				}
+
+				checkDelayedLocRemaining = 0;
+				console.log('******** LOC success... pushing phase');
+			}
+
 			sendState(adapterState.Phase, (currPhase && currPhase.t) || 0, currPhase);
 
 			for (var id in phaseStateQueue)
