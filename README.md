@@ -69,13 +69,14 @@ components that it provides to hosting applications, as described below:
 
  property | setting | description
 :---------|:--------|:--------------
-**`dbg`** | _int_ | Set to 0 to enable local debug logging. Any other int value results in no debug output|
+**`dbg`** | _int_ | Set to 0 to enable local debug logging. Any other int value results in no debug output.|
+**`agentFirstNameOnly`** | _bool_ | When set, passes along only the "first" name of an agent on `name` StateUpdate events. Assumes space-delimited agent names.
 **`defaultPhase`** | _string_ | Default phase to use if no phase information is found in the data stream. If not set, starting Phase will be **Live**.
-**`elementViewer`** | _string_ | Specifies the selector of the HTML DOM element to place the Glympse Viewer map control
+**`elementViewer`** | _string_ | Specifies the selector of the HTML DOM element to place the Glympse Viewer map control.
 **`etaUpdateInterval`** | _int_ | Time interval (in ms) to update estimated ETA in the absense of ETA in the datastream. Set to <= 0 to disable.
 **`mapExpiredToPhase`** | _string_ | If set, sends the phase specified by this setting when an `Expired = true` state update occurs (i.e. moves the app to a particular Phase when the monitored Glympse invite expires). If not set, the `Expired` state update will be propogated to the host app for additional processing.
 **`mapPhases`** | _string_ | Maps specified phases to alternate phases then they appear in a Phase update. _For more information, see **Phase Mapping**, below._
-**`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_
+**`phaseStateFilter`** | _object_ | _See the **Phase state filter** section, below_.
 **`snapshotMode`** | _bool_ | Flag to enable _snapshot_ mode, where UI and map displays are synchronized for consistent images generated via Glympse's Snapshot Service. _See the **Snapshot Mode** section, below, for more information._
 
 
