@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.5.19)');
+	console.log(_id + ' v(1.5.20)');
 
 
 	/*
@@ -426,6 +426,12 @@ define(function(require, exports, module)
 				}
 
 				case adapterState.Name:
+				{
+					val = (cfg.agentFirstNameOnly) ? (val && val.split(' ')[0]) : val;
+					sendState(id, t, val);
+					return;
+				}
+
 				case adapterState.Avatar:
 				{
 					sendState(id, t, val);
