@@ -1,7 +1,7 @@
 {
   "name": "glympse-journey-core",
   "description": "Glympse Journey (Core)",
-  "version": "1.5.20",
+  "version": "1.6.0",
   "homepage": "https://github.com/Glympse/glympse-journey-core",
   "authors": [
     {
@@ -38,6 +38,6 @@
   "dependencies": {
     "requirejs": "~2.1.20",
     "almond": "~0.3.1",
-    "glympse-adapter": "^1.3.10"
+    "glympse-adapter": "^2.0.0"
   }
 }
