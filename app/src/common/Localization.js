@@ -1,48 +1,81 @@
-define(function(require, exports, module)
+define(function (require, exports, module)
 {
-    'use strict';
+	'use strict';
 
-	// app-specific
-	var lib = require('common/utils');
-
-	var cLocaleEn = 'en';
-
-    var strings;
-	var currLoc;
-    var currLangMarket;
-    var defaultLoc = cLocaleEn;
-
-
-	var Localization =
+	function Localization()
 	{
+		// app-specific
+		var lib = require('common/utils');
+
+		var cLocaleEn = 'en';
+
+		var strings;
+		var currLoc;
+		var currLangMarket;
+		var defaultLoc = cLocaleEn;
+
+		var langMarketStrings;
+		var langStrings;
+		var defaultLocStrings;
+		var hardcodedLocStrings;
+
+
+		function _setDefaultLoc(targetDefaultLoc)
+		{
+			var newDefault = ((strings[targetDefaultLoc] && targetDefaultLoc) || (strings[defaultLoc] && defaultLoc) || (strings[cLocaleEn] && cLocaleEn));
+
+			// Notify if we've switched
+			if (newDefault !== targetDefaultLoc)
+			{
+				console.log('[Localization] loc not found: "' + targetDefaultLoc + '" .. using "' + newDefault + '" instead');
+			}
+
+			defaultLoc = newDefault;
+		}
+
+		function _setLoc()
+		{
+			currLoc = currLoc.replace('_', '-').toLowerCase();
+
+			if (currLoc.indexOf('-') > -1)
+			{
+				currLangMarket = currLoc;
+				currLoc = currLangMarket.split('-')[0];
+			}
+
+			langMarketStrings = strings[currLangMarket] || {};
+			langStrings = strings[currLoc] || {};
+
+		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PROPERTIES
 		///////////////////////////////////////////////////////////////////////////////
 
-		getLoc: function()
+		this.getLoc = function ()
 		{
 			return currLoc;
-		},
-		setLoc: function(newLoc)
+		};
+		this.setLoc = function (newLoc)
 		{
 			currLoc = newLoc;
-		},
-		getDefaultLoc: function()
+			_setLoc();
+		};
+		this.getDefaultLoc = function ()
 		{
 			return defaultLoc;
-		},
-		setDefaultLoc: function(newDefaultLoc)
+		};
+		this.setDefaultLoc = function (newDefaultLoc)
 		{
 			_setDefaultLoc(newDefaultLoc);
-		},
+		};
 
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		init: function(stringSet)
+		this.defineStrings = function (stringSet)
 		{
 			strings = stringSet;
 			defaultLoc = _setDefaultLoc(strings.defaultLoc);
@@ -53,55 +86,37 @@ define(function(require, exports, module)
 			}
 
 			//if there are no locales, we don't need to worry about them
-            if (!strings.hasLocales) {
-                currLoc = cLocaleEn;
-                return;
-            }
-
-            //set the locale from the param override
+			if (!strings.hasLocales)
+			{
+				currLoc = cLocaleEn;
+			}
+			else
+			//set the locale from the param override
 			if (strings.lang)
 			{
 				currLoc = strings.lang;
 			}
 
-            if (currLoc.indexOf('-') > -1)
-            {
-				currLangMarket = currLoc;
-				currLoc = currLangMarket.split('-')[0];
-			}
-		},
+			_setLoc();
 
-		getString: function(stringId)
+			defaultLocStrings = strings[defaultLoc] || {};
+			hardcodedLocStrings = strings[cLocaleEn] || {};
+		};
+
+		this.getString = function (stringId)
 		{
-			var langMarketStrings = strings[currLangMarket] || {};
-			var langStrings = strings[currLoc] || {};
-			var defaultLocStrings = strings[defaultLoc] || {};
-			var hardcodedLocStrings = strings[cLocaleEn] || {};
-
 			var currString = langMarketStrings[stringId] || langStrings[stringId] || defaultLocStrings[stringId] || hardcodedLocStrings[stringId];
-            //console.log(stringId + ': ' + currString);
+			//console.log(stringId + ': ' + currString);
 
 			if (currString === undefined)
 			{
 				console.log('NOT_FOUND: String not found: ' + stringId);
+				currString = '';
 			}
 
 			return currString;
 		}
 
-	};
-
-	function _setDefaultLoc(targetDefaultLoc)
-    {
-		//check if config default exists
-		if (targetDefaultLoc && !strings[targetDefaultLoc])
-		{
-			console.log('loc not found: ' + targetDefaultLoc);
-			targetDefaultLoc = undefined;
-		}
-
-		//set default loc if specified in config, otherwise set to the standard/previous default
-		return (targetDefaultLoc || (strings[defaultLoc] && defaultLoc) || strings[cLocaleEn]);
 	}
 
 	module.exports = Localization;
