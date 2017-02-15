@@ -119,5 +119,5 @@ define(function (require, exports, module)
 
 	}
 
-	module.exports = Localization;
+	module.exports = new Localization();
 });
