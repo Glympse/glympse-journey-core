@@ -5,6 +5,6 @@ module.exports = {
   },
   options: {
     exclude: ['requirejs', 'almond'],
-	transitive: true
+    transitive: true
   }
 };

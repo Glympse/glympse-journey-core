@@ -1,4 +1,4 @@
-define(function (require, exports, module)
+define(function(require, exports, module)
 {
 	'use strict';
 
@@ -16,7 +16,7 @@ define(function (require, exports, module)
 		// PUBLICS
 		///////////////////////////////////////////////////////////////////////////////
 
-		this.defineStrings = function (stringsObj)
+		this.defineStrings = function(stringsObj)
 		{
 			// 1. Add strings with lang from urlParams
 			_addStrings(stringsObj, stringsObj.lang);
@@ -28,7 +28,7 @@ define(function (require, exports, module)
 			_addStrings(stringsObj, cLocaleEn);
 		};
 
-		this.getString = function (stringId)
+		this.getString = function(stringId)
 		{
 			for (var i = 0, len = resultStrings.length; i < len; i++)
 			{
@@ -40,7 +40,7 @@ define(function (require, exports, module)
 			}
 
 			console.warn('NOT_FOUND: String not found: ' + stringId);
-			return '__' + string + '__';
+			return ('__' + stringId + '__');
 		};
 
 		// Locate localized version of additional strings (e.g. rescheduleWrapper in `fido` config).
@@ -55,7 +55,7 @@ define(function (require, exports, module)
 			}
 
 			return {};
-		}
+		};
 
 
 		///////////////////////////////////////////////////////////////////////////////

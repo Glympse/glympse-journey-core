@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.7.0   | 2017/06/17 | Localization class, sync to GA 2.4.0
 1.6.0   | 2017/02/10 | Sync of glympse-adapter 2.0.0
 1.5.20  | 2016/10/13 | Added `agentFirstNameOnly` config option
 1.5.19  | 2016/10/06 | Delay sending "live" phase update if no location for up to 20 seconds (temp hack)

@@ -16,11 +16,11 @@ module.exports = function(grunt) {
         // Configurable paths
         app: 'app',
         dist: 'dist',
-		distExports: 'dist',
-		moduleIn: 'JourneyCore',
-		moduleOut: 'glympse-journey-core',
-		moduleVersion: '1.6.0',
-		buildsDir: 'builds'
+        distExports: 'dist',
+        moduleIn: 'JourneyCore',
+        moduleOut: 'glympse-journey-core',
+        moduleVersion: '1.7.0',
+        buildsDir: 'builds'
       }
     }
   });
