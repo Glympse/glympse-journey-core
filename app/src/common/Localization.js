@@ -40,7 +40,7 @@ define(function(require, exports, module)
 			}
 
 			console.warn('NOT_FOUND: String not found: ' + stringId);
-			return ('__' + stringId + '__');
+			return '';
 		};
 
 		// Locate localized version of additional strings (e.g. rescheduleWrapper in `fido` config).
