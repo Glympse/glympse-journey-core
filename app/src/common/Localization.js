@@ -11,27 +11,6 @@ define(function (require, exports, module)
 		var localesQueue = [];
 		var resultStrings = [];
 
-		function _addStrings(stringsObj, locale)
-		{
-			if (!locale)
-			{
-				return;
-			}
-			var langs = locale.replace('_', '-').toLowerCase().split('-');
-			while (langs.length) {
-				var lang = langs.join('-');
-				var langStrings = stringsObj[lang];
-				if (lang && (localesQueue.indexOf(lang) === -1))
-				{
-					localesQueue.push(lang);
-				}
-				if (langStrings && (resultStrings.indexOf(langStrings)  === -1))
-				{
-					resultStrings.push(langStrings);
-				}
-				langs.pop();
-			}
-		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// PUBLICS
@@ -59,21 +38,58 @@ define(function (require, exports, module)
 					return val;
 				}
 			}
+
 			console.warn('NOT_FOUND: String not found: ' + stringId);
-			return '';
+			return '__' + string + '__';
 		};
 
-		// Need this function to get localized version of additional strings (e.g. rescheduleWrapper in `fido` config).
-		// May be need store all strings under `strings` key in config and get rid of this function
-		this.getLocalizedStrings = function(strings) {
+		// Locate localized version of additional strings (e.g. rescheduleWrapper in `fido` config).
+		this.getLocalizedStrings = function(strings)
+		{
 			for (var i = 0, len = localesQueue.length; i < len; i++)
 			{
-				if (strings[localesQueue[i]]) {
+				if (strings[localesQueue[i]])
+				{
 					return strings[localesQueue[i]];
 				}
 			}
+
 			return {};
 		}
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		// INTERNAL
+		///////////////////////////////////////////////////////////////////////////////
+
+		function _addStrings(stringsObj, locale)
+		{
+			if (!locale)
+			{
+				return;
+			}
+			
+			var langs = locale.replace('_', '-').toLowerCase().split('-');
+			while (langs.length)
+			{
+				var lang = langs.join('-');
+				var langStrings = stringsObj[lang];
+
+				if (lang && (localesQueue.indexOf(lang) < 0))
+				{
+					localesQueue.push(lang);
+				}
+
+				if (langStrings && (resultStrings.indexOf(langStrings) < 0))
+				{
+					resultStrings.push(langStrings);
+				}
+
+				langs.pop();
+			}
+		}
 	}
+
+
 	module.exports = new Localization();
 });
