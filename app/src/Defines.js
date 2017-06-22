@@ -44,7 +44,8 @@ define(function(require, exports, module)
 
 		, PHASE:
 		{
-			  Initial: 'initial'
+			  None: '-'
+			, Initial: 'initial'
 			, Pre: 'pre'			// Same as initial?
 			, Eta: 'eta'
 			, Live: 'live'
