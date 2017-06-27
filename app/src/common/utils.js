@@ -136,6 +136,9 @@ define(function(require, exports, module)
 				console.log('Unable to save setting "' + id + '" on "' + invite + '" -- ' + e);
 			}
 		}
+		, getBrowserLoc: function() {
+			return (navigator.language || navigator.userLanguage || navigator.systemLanguage || navigator.browserLanguage || '').toLowerCase();
+		}
 	};
 
 

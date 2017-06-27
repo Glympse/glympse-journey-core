@@ -4,8 +4,8 @@ define(function(require, exports, module)
 
 	function Localization()
 	{
-		// app-specific
-		var lib = require('common/utils');
+		// need to use relative path here to avoid collision with files of hosted app
+		var lib = require('./utils');
 
 		var cLocaleEn = 'en';
 		var localesQueue = [];
@@ -68,7 +68,7 @@ define(function(require, exports, module)
 			{
 				return;
 			}
-			
+
 			var langs = locale.replace('_', '-').toLowerCase().split('-');
 			while (langs.length)
 			{
