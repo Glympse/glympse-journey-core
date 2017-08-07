@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.7.3   | 2017/08/07 | Bugfixes + glympse-adapter 2.9.0
 1.7.2   | 2017/06/22 | Phase.None added
 1.7.1   | 2017/06/17 | Loc bugix
 1.7.0   | 2017/06/17 | Localization class, sync to GA 2.4.0
