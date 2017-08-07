@@ -23,7 +23,7 @@ define(function(require, exports, module)
 		// components
 
 		// state
-		var userToken;
+		var userToken = cfg.authToken;
 
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -81,8 +81,11 @@ define(function(require, exports, module)
 
 		function updateAuth()
 		{
-			// FIXME: Query through viewer API instead of short-circuiting
-			userToken = lib.getCookie('access_token');
+			// FIXME: Use adapter to make request (with auth info)
+			if (!userToken)
+			{
+				userToken = lib.getCookie('access_token');
+			}
 			//console.log('Got userToken: ' + userToken);
 		}
 
