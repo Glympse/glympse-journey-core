@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.7.5   | 2017/09/09 | `numNoLocChecks` option + glympse-adapter 2.10.0
 1.7.3/4 | 2017/08/07 | Bugfixes + glympse-adapter 2.9.0
 1.7.2   | 2017/06/22 | Phase.None added
 1.7.1   | 2017/06/17 | Loc bugix

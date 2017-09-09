@@ -23,7 +23,7 @@ define(function(require, exports, module)
 
 	// Note: Format is fixed. If you change it, be sure to
 	// update regex in grunt/replace.js
-	console.log(_id + ' v(1.7.4)');
+	console.log(_id + ' v(1.8.0)');
 
 
 	/*
@@ -49,6 +49,8 @@ define(function(require, exports, module)
 		var that = this;
 
 		var adapter;
+		var checkDelayedLocRemaining = cfg.numNoLocChecks || 0;
+		var checkDelayedLocPeriod = 1000;
 		var currEta = cUndefined;
 		var currPhase = null;
 		var etaTimeout;
@@ -300,8 +302,6 @@ define(function(require, exports, module)
 		 * Broadcast updated Phase state, and send along any filtered phase-based
 		 * states, as necessary.
 		 */
-		var checkDelayedLocRemaining = 20;
-		var checkDelayedLocPeriod = 1000;
 		function sendCurrentPhase()
 		{
 			if (currPhase.phase === p.Live && checkDelayedLocRemaining--)
