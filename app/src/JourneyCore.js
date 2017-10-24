@@ -304,8 +304,10 @@ define(function(require, exports, module)
 		 */
 		function sendCurrentPhase()
 		{
-			if (currPhase.phase === p.Live && checkDelayedLocRemaining--)
+			if (currPhase.phase === p.Live && checkDelayedLocRemaining > 0)
 			{
+				checkDelayedLocRemaining--;
+
 				var loc = adapter.map.getInvites()[0].getInvite().location;
 				console.log('******** Checking for location!! --> ', loc);
 				if (!loc)
