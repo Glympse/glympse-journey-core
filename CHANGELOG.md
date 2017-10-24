@@ -2,10 +2,11 @@
 
 version |date        |notes
 :-------|:-----------|:------
-1.7.5   | 2017/09/09 | `numNoLocChecks` option + glympse-adapter 2.10.0
+1.8.1   | 2017/10/24 | Bugfix for location checking: infinite timeout loop after the 2nd live phase event.
+1.8.0   | 2017/09/09 | `numNoLocChecks` option + glympse-adapter 2.10.0
 1.7.3/4 | 2017/08/07 | Bugfixes + glympse-adapter 2.9.0
 1.7.2   | 2017/06/22 | Phase.None added
-1.7.1   | 2017/06/17 | Loc bugix
+1.7.1   | 2017/06/17 | Loc bugfix
 1.7.0   | 2017/06/17 | Localization class, sync to GA 2.4.0
 1.6.0   | 2017/02/10 | Sync of glympse-adapter 2.0.0
 1.5.20  | 2016/10/13 | Added `agentFirstNameOnly` config option
