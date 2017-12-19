@@ -38,6 +38,6 @@
   "dependencies": {
     "requirejs": "~2.1.20",
     "almond": "~0.3.1",
-    "glympse-adapter": "^2.10.0"
+    "glympse-adapter": "^2.11.1"
   }
 }
