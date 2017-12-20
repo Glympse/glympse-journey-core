@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.8.2   | 2017/12/20 | Bump minimum required glympse-adapter version to 2.11.1.
 1.8.1   | 2017/10/24 | Bugfix for location checking: infinite timeout loop after the 2nd live phase event.
 1.8.0   | 2017/09/09 | `numNoLocChecks` option + glympse-adapter 2.10.0
 1.7.3/4 | 2017/08/07 | Bugfixes + glympse-adapter 2.9.0
