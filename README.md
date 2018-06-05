@@ -1,5 +1,15 @@
 # Glympse Journey (Core)
 
+- [Overview](#overview)
+- [Structure](#structure)
+- [Configuration](#configuration)
+- [ViewManager setup](#viewmanager-setup)
+- [GJC API endpoints](#gjc-api-endpoints)
+- [GJC Feedback component](#gjc-feedback-component)
+- [Putting it all together](#putting-it-all-together)
+- [Local GJC project setup/build verification](#local-gjc-project-setup/build-verification)
+- [Release a new version](#release-a-new-version)
+
 ## Overview
 The Glympse Journey Core (GJC) component is the Journey engine, handling all
 interaction with the Glympse En Route suite of products. In addition, it handles
@@ -315,8 +325,6 @@ project GJC-based project. More details can be found at
 
 
 ## Local GJC project setup/build verification
-It is actually quite simple really!
-
 First make sure you have node.js installed... without that nothing works!  You can either install it
 with your favorite package manager or with [the installer](http://nodejs.org/download) found on
 [nodejs.org](http://nodejs.org).
@@ -333,17 +341,19 @@ Note: Currently, the GJC is intended to be used a bower component for end-user p
 generate acompiled/minified .js file, it is not currently used. However, the `grunt` command should be
 successful before final git submission for users.
 
-For final git submissions for public consumption, the following items should be covered:
 
+## Release a new version
 - Version information updates:
   - `Gruntfile.js`: `data.config.moduleVersion` with the new [semantic] (MAJOR.MINOR.PATCH) version
   - `bower.json`: `version` property (same value as used above)
+  - `package.json`: `version` property (same value as used above)
 - This `README.md` with any relevent changes
 - `CHANGELOG.md` should be updated with high-level change info
 - `grunt` should return no warnings or errors
   - Note that `grunt` will also generate a compiled version of the GJC component, located in the root `builds/` directory
-- git checkin to the repo's master branch, including a tag with the same semantic version used in the config versioning updates, as described above (this allows bower consumers to update to this version)
-
+- check in to `develop` with message that confirms this was a new release: 'build x.x.x'
+- switch to `master` and merge `develop` to `master` (don't forget to push the code)
+- generate a new release with github: Open project > Releases tab > Draft a new message. Then put a new version number, select `master` branch and press "Publish release".
 
 [Glympse Adapter]: https://github.com/Glympse/glympse-adapter
 [semantic]: http://http://semver.org/
