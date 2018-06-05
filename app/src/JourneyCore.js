@@ -531,7 +531,6 @@ define(function(require, exports, module)
 						break;
 					}
 
-					case s.DriverId:
 					case s.Duration:
 					{
 						sendState(id, t, val);
