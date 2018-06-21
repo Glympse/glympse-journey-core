@@ -415,6 +415,9 @@ define(function(require, exports, module)
 			{
 				case adapterState.Eta:
 				{
+					if (currEta && val && currEta.eta_ts > val.eta_ts) {
+						return;
+					}
 					if (val)
 					{
 						// Parse "special" eta info
@@ -432,6 +435,9 @@ define(function(require, exports, module)
 
 				case adapterState.EtaRange:
 				{
+					if (currEta && val && currEta.eta_ts > val.eta_ts) {
+						return;
+					}
 					currEta = val;
 					updateEstimatedEta();
 					return;
