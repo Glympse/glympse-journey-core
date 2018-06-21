@@ -370,7 +370,7 @@ define(function(require, exports, module)
 				if (!isNaN(eta))
 				{
 					// Only send valid ETAs from the viewer
-					sendState(adapterState.Eta, t, {eta: (eta > 0) ? eta : 0, eta_ts: now});
+					sendState(adapterState.Eta, now, {eta: (eta > 0) ? eta : 0, eta_ts: now});
 				}
 			}
 			else
@@ -382,7 +382,7 @@ define(function(require, exports, module)
 					etaFrom = 0;
 					etaTo = 0;
 				}
-				sendState(adapterState.EtaRange, t, {from: etaFrom, to: etaTo, eta_ts: now});
+				sendState(adapterState.EtaRange, now, {from: etaFrom, to: etaTo, eta_ts: now});
 			}
 
 			if (etaUpdateInterval > 0)
