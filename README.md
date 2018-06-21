@@ -7,7 +7,7 @@
 - [GJC API endpoints](#gjc-api-endpoints)
 - [GJC Feedback component](#gjc-feedback-component)
 - [Putting it all together](#putting-it-all-together)
-- [Local GJC project setup/build verification](#local-gjc-project-setup/build-verification)
+- [Local GJC project setup and build verification](#local-gjc-project-setup-and-build-verification)
 - [Release a new version](#release-a-new-version)
 
 ## Overview
@@ -324,7 +324,7 @@ project GJC-based project. More details can be found at
 [https://github.com/Glympse/generator-glympse-journey-app](https://github.com/Glympse/generator-glympse-journey-app).
 
 
-## Local GJC project setup/build verification
+## Local GJC project setup and build verification
 First make sure you have node.js installed... without that nothing works!  You can either install it
 with your favorite package manager or with [the installer](http://nodejs.org/download) found on
 [nodejs.org](http://nodejs.org).
@@ -347,8 +347,9 @@ successful before final git submission for users.
   - `Gruntfile.js`: `data.config.moduleVersion` with the new [semantic] (MAJOR.MINOR.PATCH) version
   - `bower.json`: `version` property (same value as used above)
   - `package.json`: `version` property (same value as used above)
-- This `README.md` with any relevent changes
+- Update `README.md` with any relevant changes
 - `CHANGELOG.md` should be updated with high-level change info
+- run `bower update` to update all dependant modules (first of all `glympse-adapter`)
 - `grunt` should return no warnings or errors
   - Note that `grunt` will also generate a compiled version of the GJC component, located in the root `builds/` directory
 - check in to `develop` branch with message that confirms this was a new release: 'build x.x.x'
