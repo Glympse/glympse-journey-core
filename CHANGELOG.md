@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.9.2   | 2018/06/21 | Bugfix for ETA handling: ignore older data-property
 1.9.1   | 2018/06/21 | Added handling of eta_range property
 1.9.0   | 2018/06/05 | Change for 'driverId' handling: send 'driverId' via DataUpdate event
 1.8.2   | 2017/12/20 | Bump minimum required glympse-adapter version to 2.11.1.
