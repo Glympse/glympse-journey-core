@@ -346,43 +346,19 @@ define(function(require, exports, module)
 			}
 
 			// Don't estimate if we haven't yet received an ETA
-			if (!currEta)
-			{
-				return;
-			}
-			// Don't estimate if latest eta object is empty
-			if ((currEta.eta === cUndefined || currEta.eta === null) && !currEta.from && !currEta.to)
+			if (!currEta || currEta.eta === cUndefined || currEta.eta === null)
 			{
 				return;
 			}
 
-			var now = new Date().getTime();
-			var timeElapsed = now - currEta.eta_ts;
+			var invite = adapter.map.getInvites()[0];
+			var eta = invite.getEtaEstimate() * 1000;
+			var t = new Date().getTime();
 
-			if (currEta.eta)
+			if (!isNaN(eta))
 			{
-				var eta = currEta.eta - timeElapsed;
-				if (eta < 0)
-				{
-					eta = 0;
-				}
-
-				if (!isNaN(eta))
-				{
-					// Only send valid ETAs from the viewer
-					sendState(adapterState.Eta, now, {eta: (eta > 0) ? eta : 0, eta_ts: now});
-				}
-			}
-			else
-			{
-				var etaFrom = currEta.from - timeElapsed;
-				var etaTo = currEta.to - timeElapsed;
-				if (etaFrom < 0 && etaTo < 0)
-				{
-					etaFrom = 0;
-					etaTo = 0;
-				}
-				sendState(adapterState.EtaRange, now, {from: etaFrom, to: etaTo, eta_ts: now});
+				// Only send valid ETAs from the viewer
+				sendState(adapterState.Eta, t, { eta: (eta > 0) ? eta : 0, eta_ts: t });
 			}
 
 			if (etaUpdateInterval > 0)
@@ -415,9 +391,6 @@ define(function(require, exports, module)
 			{
 				case adapterState.Eta:
 				{
-					if (currEta && val && currEta.eta_ts > val.eta_ts) {
-						return;
-					}
 					if (val)
 					{
 						// Parse "special" eta info
@@ -428,16 +401,6 @@ define(function(require, exports, module)
 						}
 					}
 
-					currEta = val;
-					updateEstimatedEta();
-					return;
-				}
-
-				case adapterState.EtaRange:
-				{
-					if (currEta && val && currEta.eta_ts > val.eta_ts) {
-						return;
-					}
 					currEta = val;
 					updateEstimatedEta();
 					return;
