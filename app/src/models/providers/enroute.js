@@ -98,23 +98,22 @@ define(function(require, exports, module)
 		function sendFeedback(vals)
 		{
 			var i, len;
+			var id = 0;
 			var items = [];
-			var idInfo = cfg.surveyIdInfo;
-			var idOptions = cfg.surveyOptions;
 
-			if (idInfo && vals.info)
+			if (vals.info)
 			{
-				for (i = 0, len = idInfo.length; i < len; i++)
+				for (i = 0, len = vals.info.length; i < len; i++, id++)
 				{
-					items.push({ _id: idInfo[i], value: vals.info[i] });
+					items.push({ _id: id, value: vals.info[i] });
 				}
 			}
 
-			if (idOptions && vals.options)
+			if (vals.options)
 			{
-				for (i = 0, len = idOptions.length; i < len; i++)
+				for (i = 0, len = vals.options.length; i < len; i++, id++)
 				{
-					items.push({ _id: idOptions[i], value: vals.options[i] });
+					items.push({ _id: id, value: vals.options[i] });
 				}
 			}
 
