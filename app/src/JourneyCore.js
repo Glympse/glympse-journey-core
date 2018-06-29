@@ -54,6 +54,10 @@ define(function(require, exports, module)
 		var currEta = cUndefined;
 		var currPhase = null;
 		var etaTimeout;
+		var etaQueryTimeout;
+		var etaQueryPollingEnabled = false;
+		var etaQueryDefaultPeriod = 30000;
+		var etaQueryPeriod;
 		var etaUpdateInterval = cfg.etaUpdateInterval || 0;
 		var initialized = false;
 		var isSnapshot = false;
@@ -213,6 +217,21 @@ define(function(require, exports, module)
 				case adapterMsg.InviteAdded:
 				{
 					return viewManager.cmd(msg, args);
+				}
+				case m.StartQueryEta:
+				{
+					startPollingEtaRange(args);
+					break;
+				}
+				case m.StopQueryEta:
+				{
+					stopPollingEtaRange();
+					break;
+				}
+				case adapterMsg.InviteEta:
+				{
+					sendEtaData(msg, args);
+					break;
 				}
 
 				default:
@@ -583,6 +602,40 @@ define(function(require, exports, module)
 			numSyncedComponents = -1;
 		}
 
+		function startPollingEtaRange(interval)
+		{
+			if (etaQueryPollingEnabled)
+			{
+				return;
+			}
+			etaQueryPollingEnabled = true;
+			etaQueryPeriod = interval || etaQueryDefaultPeriod;
+			requestInviteEta();
+		}
+
+		function stopPollingEtaRange()
+		{
+			etaQueryPollingEnabled = false;
+			if (etaQueryTimeout)
+			{
+				clearTimeout(etaQueryTimeout);
+				etaQueryTimeout = 0;
+			}
+		}
+
+		function requestInviteEta()
+		{
+			adapter.core.getInviteEta(adapter.map.getInvites()[0].getInvite().id);
+		}
+
+		function sendEtaData(msg, args)
+		{
+			viewManager.cmd(msg, args);
+			if (etaQueryPollingEnabled)
+			{
+				etaQueryTimeout = setTimeout(requestInviteEta, etaQueryPeriod);
+			}
+		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		// CALLBACKS
