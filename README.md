@@ -352,8 +352,6 @@ successful before final git submission for users.
   - Note that `grunt` will also generate a compiled version of the GJC component, located in the root `builds/` directory
 - check in to `develop` branch with message that confirms this was a new release: 'build x.x.x'
 - switch to `master` branch and merge `develop` branch to `master` branch (don't forget to push the code)
-- generate a new release with github: Open project > Releases tab > Draft a new message. 
-Then put a new version number, select `master` branch and press "Publish release". This will also automatically create a tag.
-
+- generate a new release with github by creating a new tag (see https://github.com/Glympse/ui-team/wiki/How-to-create-a-tag)
 [Glympse Adapter]: https://github.com/Glympse/glympse-adapter
 [semantic]: http://http://semver.org/
