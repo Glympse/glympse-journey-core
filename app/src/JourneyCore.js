@@ -26,11 +26,11 @@ define(function(require, exports, module)
 	console.log(_id + ' v(1.10.0)');
 
 
-	/*
-	 * vm: Valid instance of ViewManager interface
-	 * cfgCore [object]: Settings for app, viewer, and adapter
-	 *
-	 * [object]: { journey: { ... }, viewer: { ... }, adapter: { ... } }
+	/**
+	 * @module
+	 * @param {Object} vm Valid instance of ViewManager interface
+	 * @param {Object} cfgCore Settings for app, viewer, and adapter.
+	 * @constructor
 	 */
 	function JourneyCore(vm, cfgCore)
 	{

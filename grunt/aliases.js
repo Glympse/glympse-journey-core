@@ -39,6 +39,10 @@ module.exports = function (grunt) {
 	//'clean:postDist'
   ]);
 
+  grunt.registerTask('jsdoc', [
+    'jsdoc'
+  ]);
+
   grunt.registerTask('lint', [
     'jscs',
     'eslint'

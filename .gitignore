@@ -19,3 +19,6 @@ app/src/ph
 .sass-cache
 .idea
 *.iml
+
+# directory used by `jsdoc` tool to generate JS documentation for developers
+docs
