@@ -2,6 +2,7 @@
 
 version |date        |notes
 :-------|:-----------|:------
+1.10.1  | 2018/08/16 | Added `grunt jsdoc` task + some JSDoc annotations in code
 1.10.0  | 2018/06/29 | Update handling for eta_range
 1.9.3   | 2018/06/26 | Removed surveyIdInfo and surveyOptions logic in favor of generating IDs internally
 1.9.2   | 2018/06/21 | Bugfix for ETA handling: ignore older data-property
